@@ -1,0 +1,18 @@
+{
+  "name": "OFM-SML",
+  "version": "0.1.0",
+  "dependencies": {
+    "libsml": "https://github.com/volkszaehler/libsml#c166372"
+  },
+  "description": "Enables the reading from meters operated in germany via sml interface.",
+  "homepage": "https://openknx.de",
+  "authors": {
+    "name": "Marco Scholl",
+    "email": "develop@marco-scholl.de",
+    "maintainer": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OpenKNX/OFM-SML"
+  }
+}
