@@ -1,6 +1,6 @@
 #include "SMLChannel.h"
-#include <sml/sml_file.h>
 #include "SMLModule.h"
+#include <sml/sml_file.h>
 
 const uint16_t SML_CRC_TABLE[256] PROGMEM =
     {0x0000, 0x1189, 0x2312, 0x329B, 0x4624, 0x57AD, 0x6536, 0x74BF, 0x8C48,
@@ -44,7 +44,12 @@ SMLChannel::SMLChannel(uint8_t index)
 
 HardwareSerial *SMLChannel::serial()
 {
-    return openknxSMLModule.serials[_channelIndex];
+    return _serial;
+}
+
+void SMLChannel::serial(HardwareSerial *serial)
+{
+    _serial = serial;
 }
 
 const std::string SMLChannel::name()
@@ -121,8 +126,12 @@ void SMLChannel::parseBuffer()
 
         if (crc == crc_received)
         {
-            logDebugP("Valid SmlFile found");
-            // logHexDebugP(_buffer, endPos);
+            if (openknxSMLModule.debug())
+            {
+                logInfoP("Valid sml file found");
+                logIndentUp();
+                logHexInfoP(_buffer, endPos);
+            }
 
             // bereit weiter verarbeitung vor.
             moveBuffer(8); // Schmeiße den Anfang weg
@@ -132,10 +141,15 @@ void SMLChannel::parseBuffer()
             const uint16_t len = removeEscaping(endPos) - fillBytes - 8 /* ENDSEQ */;
 
             processFile(_buffer, len);
+
+            if (openknxSMLModule.debug())
+            {
+                logIndentDown();
+            }
         }
         else
         {
-            logErrorP("Invalid checksum %04X != %04X", crc, crc_received);
+            logErrorP("Invalid sml file (checksum %04X != %04X)", crc, crc_received);
             logHexErrorP(_buffer, endPos);
         }
         moveBuffer(endPos);
@@ -147,14 +161,12 @@ int SMLChannel::findSequence(const uint8_t *sequence, const size_t length)
     int range = _bufferSize - length;
     if (range >= 0)
     {
-        // logDebugP("findSequence: %i (%i) %i", length, _bufferSize, range);
         for (int i = 0; i <= range; i++)
         {
             if (i + length <= _bufferSize)
             {
                 if (memcmp(sequence, _buffer + i, length) == 0)
                 {
-                    // logDebugP("  findSequence: found");
                     return i;
                 }
             }
@@ -172,8 +184,6 @@ void SMLChannel::resetBuffer()
 
 bool SMLChannel::moveBuffer(uint16_t move)
 {
-    // logDebugP("moveBuffer: %i (%i)", move, _bufferSize);
-
     if (move > _bufferSize)
     {
         logErrorP("moveBuffer ERROR %i / %i", move, _bufferSize);
@@ -181,12 +191,10 @@ bool SMLChannel::moveBuffer(uint16_t move)
     }
     if (_bufferSize - move > 0)
     {
-        // logDebugP("move: %i (%i)", move, _bufferSize - move);
         memmove(_buffer, _buffer + move, _bufferSize - move);
     }
     _bufferSize -= move;
 
-    // logDebugP("moveBuffer: done: %i", _bufferSize);
     return true;
 }
 
@@ -258,84 +266,462 @@ void SMLChannel::processDataPoint(sml_list_entry *entry)
     const uint8_t e = entry->obj_name->str[4];
     const uint8_t f = entry->obj_name->str[5];
 
-    char obisCompactIdentifier[10] = {};
-    snprintf(obisCompactIdentifier, 9, "%02d.%02d.%02d", c, d, e);
+    char obis[10] = {};
+    snprintf(obis, 9, "%02d.%02d.%02d", c, d, e);
 
-    if (a != 1) return; // Nur Stromzähler
-    if (b != 0) return; // Mir nur einem Channel
-    // f ist in DE ungenutzt und immer 255
+    if (a != 1) return; // nur Stromzähler erlaubt
 
     if (((entry->value->type & SML_TYPE_FIELD) == SML_TYPE_INTEGER) ||
         ((entry->value->type & SML_TYPE_FIELD) == SML_TYPE_UNSIGNED))
     {
-        // if ((c == 1 || c == 2) && d == 8) // Firmware
-        // {
-        //     logDebugP("%s:   %i (%i)", obisCompactIdentifier, (int64_t)*entry->value->data.int64, (uint8_t)*entry->scaler);
-        // }
-        // else
-        // {
+
         double converted = sml_value_to_double(entry->value);
 
         int scaler = (entry->scaler) ? *entry->scaler : 0;
         int prec = -scaler;
-        if (prec < 0)
-            prec = 0;
+        if (prec < 0) prec = 0;
         converted = converted * pow(10, scaler);
 
-        logDebugP("%s:   %lf", obisCompactIdentifier, (double)converted);
-        processDataPoint(a, b, c, d, e, f, (double)converted);
-        // }
+        processDataPoint(obis, a, b, c, d, e, f, (double)converted);
     }
     else if (entry->value->type == SML_TYPE_OCTET_STRING)
     {
-        if (c == 0 && d == 2 && e == 0) // Firmware
-        {
-            char text[entry->value->data.bytes->len + 1] = "";
-            memcpy(&text, entry->value->data.bytes->str, entry->value->data.bytes->len);
-
-            logDebugP("%s:   %s",
-                      obisCompactIdentifier,
-                      text);
-        }
-        else if (c == 96 && d == 50 && e == 1) // Hersteller
-        {
-            logDebugP("%s:   %c%c%c",
-                      obisCompactIdentifier,
-                      entry->value->data.bytes->str[0], entry->value->data.bytes->str[1], entry->value->data.bytes->str[2]);
-        }
-        else if (c == 96 && d == 1 && e == 0) // Zähler ID
-        {
-            logDebugP("%s:   %i %c%c%c %02u %08u",
-                      obisCompactIdentifier,
-                      entry->value->data.bytes->str[1],                                                                                                                            // Sparte
-                      entry->value->data.bytes->str[2], entry->value->data.bytes->str[3], entry->value->data.bytes->str[4],                                                        // Hersteller
-                      entry->value->data.bytes->str[5],                                                                                                                            // Fabrikationsblock
-                      entry->value->data.bytes->str[6] << 24 | entry->value->data.bytes->str[7] << 16 | entry->value->data.bytes->str[8] << 8 | entry->value->data.bytes->str[9]); // Frabrikationsnummer
-        }
-        else
-        {
-            char *converted;
-            sml_value_to_strhex(entry->value, &converted, false);
-            logDebugP("%s:   %s", obisCompactIdentifier, (char *)converted);
-            processDataPoint(a, b, c, d, e, f, (char *)converted);
-            free(converted);
-        }
+        processDataPoint(obis, a, b, c, d, e, f, (char *)entry->value->data.bytes->str, entry->value->data.bytes->len);
     }
     else if (entry->value->type == SML_TYPE_BOOLEAN)
     {
-        logDebugP("%s:   %s", obisCompactIdentifier, ((boolean)entry->value->data.boolean ? "true" : "false"));
-        processDataPoint(a, b, c, d, e, f, (boolean)entry->value->data.boolean);
+        processDataPoint(obis, a, b, c, d, e, f, (bool)entry->value->data.boolean);
     }
 }
 
-void SMLChannel::processDataPoint(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e, uint8_t f, boolean value)
+void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, bool value)
 {
+    if (openknxSMLModule.debug())
+        logInfoP("%s: %s", obis, (value ? "true" : "false"));
 }
 
-void SMLChannel::processDataPoint(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e, uint8_t f, double value)
+void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, double value)
 {
+    bool send = false;
+    if (d == 8)
+    {
+        double counter = value;
+        int64_t counterKwh = counter / 1000;
+        int64_t counterWh = counter;
+        if (openknxSMLModule.debug()) logInfoP("%s: %.3f kWh", obis, counter / 1000);
+
+        if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cType && ParamSML_cCounter)
+        {
+            if (c == 1 && e == 0)
+            {
+                if (ParamSML_cCounterChange && abs(_sentCounterIn - counterKwh) >= ParamSML_cCounterChangeV)
+                    send = true;
+
+                if (ParamSML_cCounterCyclic && (!_sentCounterInTime || delayCheck(_sentCounterInTime, ParamSML_cCounterCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentCounterIn = counterKwh;
+                    _sentCounterInTime = millis();
+                    KoSML_cCounterF1In.value(counterKwh, DPT_ActiveEnergy_kWh);
+                }
+                else
+                {
+                    KoSML_cCounterF1In.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                }
+
+                if (SML_cCounterWh)
+                    KoSML_cCounterF2In.valueCompare(counterWh, DPT_ActiveEnergy);
+            }
+            else if (c == 1 && e == 1 && (ParamSML_cType == 2 || ParamSML_cType == 4))
+            {
+                if (ParamSML_cCounterChange && abs(_sentCounterInT1 - counterKwh) >= ParamSML_cCounterChangeV)
+                    send = true;
+
+                if (ParamSML_cCounterCyclic && (!_sentCounterInT1Time || delayCheck(_sentCounterInT1Time, ParamSML_cCounterCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentCounterInT1 = counterKwh;
+                    _sentCounterInT1Time = millis();
+                    KoSML_cCounterF1InT1.value(counterKwh, DPT_ActiveEnergy_kWh);
+                }
+                else
+                {
+                    KoSML_cCounterF1InT1.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                }
+
+                if (SML_cCounterWh)
+                    KoSML_cCounterF2InT1.valueCompare(counterWh, DPT_ActiveEnergy);
+            }
+            else if (c == 1 && e == 2 && (ParamSML_cType == 2 || ParamSML_cType == 4))
+            {
+                if (ParamSML_cCounterChange && abs(_sentCounterInT2 - counterKwh) >= ParamSML_cCounterChangeV)
+                    send = true;
+
+                if (ParamSML_cCounterCyclic && (!_sentCounterInT2Time || delayCheck(_sentCounterInT2Time, ParamSML_cCounterCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentCounterInT2 = counterKwh;
+                    _sentCounterInT2Time = millis();
+                    KoSML_cCounterF1InT2.value(counterKwh, DPT_ActiveEnergy_kWh);
+                }
+                else
+                {
+                    KoSML_cCounterF1InT2.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                }
+
+                if (SML_cCounterWh)
+                    KoSML_cCounterF2InT2.valueCompare(counterWh, DPT_ActiveEnergy);
+            }
+            else if (c == 2 && e == 0 && (ParamSML_cType == 3 || ParamSML_cType == 4))
+            {
+                if (ParamSML_cCounterChange && abs(_sentCounterOut - counterKwh) >= ParamSML_cCounterChangeV)
+                    send = true;
+
+                if (ParamSML_cCounterCyclic && (!_sentCounterOutTime || delayCheck(_sentCounterOutTime, ParamSML_cCounterCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentCounterOut = counterKwh;
+                    _sentCounterOutTime = millis();
+                    KoSML_cCounterF1Out.value(counterKwh, DPT_ActiveEnergy_kWh);
+                }
+                else
+                {
+                    KoSML_cCounterF1Out.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                }
+
+                if (SML_cCounterWh)
+                    KoSML_cCounterF2Out.valueCompare(counterWh, DPT_ActiveEnergy);
+            }
+            else if (c == 2 && e == 1 && ParamSML_cType == 4)
+            {
+                if (ParamSML_cCounterChange && abs(_sentCounterOutT1 - counterKwh) >= ParamSML_cCounterChangeV)
+                    send = true;
+
+                if (ParamSML_cCounterCyclic && (!_sentCounterOutT1Time || delayCheck(_sentCounterOutT1Time, ParamSML_cCounterCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentCounterOutT1 = counterKwh;
+                    _sentCounterOutT1Time = millis();
+                    KoSML_cCounterF1OutT1.value(counterKwh, DPT_ActiveEnergy_kWh);
+                }
+                else
+                {
+                    KoSML_cCounterF1OutT1.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                }
+
+                if (SML_cCounterWh)
+                    KoSML_cCounterF2OutT1.valueCompare(counterWh, DPT_ActiveEnergy);
+            }
+            else if (c == 2 && e == 2 && ParamSML_cType == 4)
+            {
+                if (ParamSML_cCounterChange && abs(_sentCounterOutT2 - counterKwh) >= ParamSML_cCounterChangeV)
+                    send = true;
+
+                if (ParamSML_cCounterCyclic && (!_sentCounterOutT2Time || delayCheck(_sentCounterOutT2Time, ParamSML_cCounterCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentCounterOutT2 = counterKwh;
+                    _sentCounterOutT2Time = millis();
+                    KoSML_cCounterF1OutT2.value(counterKwh, DPT_ActiveEnergy_kWh);
+                }
+                else
+                {
+                    KoSML_cCounterF1OutT2.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                }
+
+                if (SML_cCounterWh)
+                    KoSML_cCounterF2OutT2.valueCompare(counterWh, DPT_ActiveEnergy);
+            }
+        }
+    }
+    else if (d == 7 && (c == 16 || c == 36 || c == 56 || c == 76))
+    {
+        if (openknxSMLModule.debug()) logInfoP("%s: %i Watt", obis, (int)value);
+
+        if (knx.configured() && openknx.afterStartupDelay())
+        {
+            if (c == 16 && ParamSML_cPowerSum)
+            {
+                if (ParamSML_cPowerSumChange && fabs(_sentDataPower - value) >= ParamSML_cPowerSumChangeV)
+                    send = true;
+
+                if (ParamSML_cPowerSumCyclic && (!_sentDataPowerTime || delayCheck(_sentDataPowerTime, ParamSML_cPowerSumCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentDataPower = value;
+                    _sentDataPowerTime = millis();
+                    KoSML_cPower.value(value, DPT_Value_Power);
+                }
+                else
+                {
+                    KoSML_cPower.valueNoSend(value, DPT_Value_Power);
+                }
+            }
+            else if (c == 36 && ParamSML_cPower)
+            {
+                if (ParamSML_cPowerChange && fabs(_sentDataPowerL1 - value) >= ParamSML_cPowerChangeV)
+                    send = true;
+
+                if (ParamSML_cPowerCyclic && (!_sentDataPowerL1Time || delayCheck(_sentDataPowerL1Time, ParamSML_cPowerCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentDataPowerL1 = value;
+                    _sentDataPowerL1Time = millis();
+                    KoSML_cPowerL1.value(value, DPT_Value_Power);
+                }
+                else
+                {
+                    KoSML_cPowerL1.valueNoSend(value, DPT_Value_Power);
+                }
+            }
+            else if (c == 56 && ParamSML_cPower)
+            {
+                if (ParamSML_cPowerChange && fabs(_sentDataPowerL2 - value) >= ParamSML_cPowerChangeV)
+                    send = true;
+
+                if (ParamSML_cPowerCyclic && (!_sentDataPowerL2Time || delayCheck(_sentDataPowerL2Time, ParamSML_cPowerCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentDataPowerL2 = value;
+                    _sentDataPowerL2Time = millis();
+                    KoSML_cPowerL2.value(value, DPT_Value_Power);
+                }
+                else
+                {
+                    KoSML_cPowerL2.valueNoSend(value, DPT_Value_Power);
+                }
+            }
+            else if (c == 76 && ParamSML_cPower)
+            {
+                if (ParamSML_cPowerChange && fabs(_sentDataPowerL3 - value) >= ParamSML_cPowerChangeV)
+                    send = true;
+
+                if (ParamSML_cPowerCyclic && (!_sentDataPowerL3Time || delayCheck(_sentDataPowerL3Time, ParamSML_cPowerCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentDataPowerL3 = value;
+                    _sentDataPowerL3Time = millis();
+                    KoSML_cPowerL3.value(value, DPT_Value_Power);
+                }
+                else
+                {
+                    KoSML_cPowerL3.valueNoSend(value, DPT_Value_Power);
+                }
+            }
+        }
+    }
+    else if (d == 7 && (c == 31 || c == 51 || c == 71))
+    {
+        if (openknxSMLModule.debug()) logInfoP("%s: %.2f Ampere", obis, value);
+        if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cCurrent)
+        {
+            if (c == 31)
+            {
+                if (ParamSML_cCurrentChange && fabs(_sentDataCurrentL1 - value) >= (double)ParamSML_cCurrentChangeV / 10)
+                    send = true;
+
+                if (ParamSML_cCurrentCyclic && (!_sentDataCurrentL1Time || delayCheck(_sentDataCurrentL1Time, ParamSML_cCurrentCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentDataCurrentL1 = value;
+                    _sentDataCurrentL1Time = millis();
+                    KoSML_cCurrentL1.value(value, DPT_Value_Electric_Current);
+                }
+                else
+                {
+                    KoSML_cCurrentL1.valueNoSend(value, DPT_Value_Electric_Current);
+                }
+            }
+            else if (c == 51)
+            {
+                if (ParamSML_cCurrentChange && fabs(_sentDataCurrentL2 - value) >= (double)ParamSML_cCurrentChangeV / 10)
+                    send = true;
+
+                if (ParamSML_cCurrentCyclic && (!_sentDataCurrentL2Time || delayCheck(_sentDataCurrentL2Time, ParamSML_cCurrentCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentDataCurrentL2 = value;
+                    _sentDataCurrentL2Time = millis();
+                    KoSML_cCurrentL2.value(value, DPT_Value_Electric_Current);
+                }
+                else
+                {
+                    KoSML_cCurrentL2.valueNoSend(value, DPT_Value_Electric_Current);
+                }
+            }
+            else if (c == 71)
+            {
+                if (ParamSML_cCurrentChange && fabs(_sentDataCurrentL3 - value) >= (double)ParamSML_cCurrentChangeV / 10)
+                    send = true;
+
+                if (ParamSML_cCurrentCyclic && (!_sentDataCurrentL3Time || delayCheck(_sentDataCurrentL3Time, ParamSML_cCurrentCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentDataCurrentL3 = value;
+                    _sentDataCurrentL3Time = millis();
+                    KoSML_cCurrentL3.value(value, DPT_Value_Electric_Current);
+                }
+                else
+                {
+                    KoSML_cCurrentL3.valueNoSend(value, DPT_Value_Electric_Current);
+                }
+            }
+        }
+    }
+    else if (d == 7 && (c == 32 || c == 52 || c == 72))
+    {
+        if (openknxSMLModule.debug()) logInfoP("%s: %.1f Volt", obis, value);
+        if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cVoltage)
+        {
+            if (c == 32)
+            {
+                if (ParamSML_cVoltageChange && fabs(_sentDataVoltageL1 - value) >= (double)ParamSML_cVoltageChangeV / 10)
+                    send = true;
+
+                if (ParamSML_cVoltageCyclic && (!_sentDataVoltageL1Time || delayCheck(_sentDataVoltageL1Time, ParamSML_cVoltageCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentDataVoltageL1 = value;
+                    _sentDataVoltageL1Time = millis();
+                    KoSML_cVoltageL1.value(value, DPT_Value_Electric_Potential);
+                }
+                else
+                {
+                    KoSML_cVoltageL1.valueNoSend(value, DPT_Value_Electric_Potential);
+                }
+            }
+            else if (c == 52)
+            {
+                if (ParamSML_cVoltageChange && fabs(_sentDataVoltageL2 - value) >= (double)ParamSML_cVoltageChangeV / 10)
+                    send = true;
+
+                if (ParamSML_cVoltageCyclic && (!_sentDataVoltageL2Time || delayCheck(_sentDataVoltageL2Time, ParamSML_cVoltageCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentDataVoltageL2 = value;
+                    _sentDataVoltageL2Time = millis();
+                    KoSML_cVoltageL2.value(value, DPT_Value_Electric_Potential);
+                }
+                else
+                {
+                    KoSML_cVoltageL2.valueNoSend(value, DPT_Value_Electric_Potential);
+                }
+            }
+            else if (c == 72)
+            {
+                if (ParamSML_cVoltageChange && fabs(_sentDataVoltageL3 - value) >= (double)ParamSML_cVoltageChangeV / 10)
+                    send = true;
+
+                if (ParamSML_cVoltageCyclic && (!_sentDataVoltageL3Time || delayCheck(_sentDataVoltageL3Time, ParamSML_cVoltageCyclicTimeMS)))
+                    send = true;
+
+                if (send)
+                {
+                    _sentDataVoltageL3 = value;
+                    _sentDataVoltageL3Time = millis();
+                    KoSML_cVoltageL3.value(value, DPT_Value_Electric_Potential);
+                }
+                else
+                {
+                    KoSML_cVoltageL3.valueNoSend(value, DPT_Value_Electric_Potential);
+                }
+            }
+        }
+    }
+    else if (c == 14 && d == 7)
+    {
+        if (openknxSMLModule.debug()) logInfoP("%s: %.1f Herz", obis, value);
+        if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cFrequency)
+        {
+            if (ParamSML_cFrequencyChange && fabs(_sentDataFrequency - value) >= (double)ParamSML_cFrequencyChangeV / 10)
+                send = true;
+
+            if (ParamSML_cFrequencyCyclic && (!_sentDataFrequencyTime || delayCheck(_sentDataFrequencyTime, ParamSML_cFrequencyCyclicTimeMS)))
+                send = true;
+
+            if (send)
+            {
+                _sentDataFrequency = value;
+                _sentDataFrequencyTime = millis();
+                KoSML_cFrequency.value(value, DPT_Value_Frequency);
+            }
+            else
+            {
+                KoSML_cFrequency.valueNoSend(value, DPT_Value_Frequency);
+            }
+        }
+    }
+    else if (c == 81 && d == 7)
+    {
+        uint16_t degree = value;
+        if (openknxSMLModule.debug()) logInfoP("%s: %i °", obis, degree);
+    }
+    else
+    {
+        if (openknxSMLModule.debug()) logInfoP("%s: %lf", obis, value);
+    }
 }
 
-void SMLChannel::processDataPoint(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e, uint8_t f, char *value)
+void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, char *value, uint8_t len)
 {
+    char value2[len + 1] = "";
+    memcpy(&value2, value, len);
+
+    if (c == 96 && d == 50 && e == 1) // Hersteller
+    {
+        char vendor[4];
+        sprintf(vendor, "%c%c%c", value[0], value[1], value[2]);
+
+        if (openknxSMLModule.debug()) logInfoP("%s: %s", obis, vendor);
+    }
+    else if (c == 96 && d == 1 && e == 0) // Zähler ID
+    {
+        char identifier[15] = {};
+        sprintf(identifier, "%i%c%c%c%02u%08u",
+                value[1],                                                    // Sparte
+                value[2], value[3], value[4],                                // Hersteller
+                value[5],                                                    // Fabrikationsblock
+                value[6] << 24 | value[7] << 16 | value[8] << 8 | value[9]); // Frabrikationsnummer
+
+        if (openknxSMLModule.debug()) logInfoP("%s: %s", obis, identifier);
+
+        if (knx.configured() && ParamSML_cIdentifikation)
+        {
+            KoSML_cIdentifier.valueNoSend(identifier, DPT_String_8859_1);
+        }
+    }
+    else
+    {
+        if (openknxSMLModule.debug()) logInfoP("%s: %X", obis, value2);
+    }
 }

@@ -25,7 +25,7 @@ void SMLModule::loop(bool configured)
     do
         _channels[_currentChannel]->loop();
 
-    while (openknx.freeLoopIterate(MIN(SML_ChannelCount, ParamSML_VisibleChannels), _currentChannel, processed));
+    while (openknx.freeLoopIterate(SML_ChannelCount, _currentChannel, processed));
 }
 
 void SMLModule::processInputKo(GroupObject &ko)
@@ -35,6 +35,27 @@ void SMLModule::processInputKo(GroupObject &ko)
 SMLChannel *SMLModule::getChannel(uint8_t index)
 {
     return _channels[index];
+}
+
+bool SMLModule::processCommand(const std::string command, bool diagnose)
+{
+    if (!diagnose && command == "sml debug")
+    {
+        _debug = !_debug;
+
+        if (_debug)
+            logInfoP("SML Debug enabled");
+        else
+            logInfoP("SML Debug disabled");
+
+        return true;
+    }
+    return false;
+}
+
+bool SMLModule::debug()
+{
+    return _debug;
 }
 
 SMLModule openknxSMLModule;

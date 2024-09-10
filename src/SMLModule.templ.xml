@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-model href="../../Organization/knxprod-support/knx_project_14/knx-editor.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<KNX xmlns:op="http://github.com/OpenKNX/OpenKNXproducer" xmlns="http://knx.org/xml/project/14" CreatedBy="KNX MT" ToolVersion="5.1.255.16695">
+  <ManufacturerData>
+    <Manufacturer>
+      <ApplicationPrograms>
+        <ApplicationProgram>
+          <Static>
+            <Parameters>
+              <Parameter Id="%AID%_P-%TT%%CC%000" Name="c%C%Name"         ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
+              <Parameter Id="%AID%_P-%TT%%CC%001" Name="c%C%ShowCounter"  ParameterType="%AID%_PT-OnOffYesNo" Text="Zählerstände" Value="1" />
+              <Parameter Id="%AID%_P-%TT%%CC%002" Name="c%C%ShowMeasure"  ParameterType="%AID%_PT-OnOffYesNo" Text="Messwerte"    Value="1" />
+              <Parameter Id="%AID%_P-%TT%%CC%003" Name="c%C%ShowExtended" ParameterType="%AID%_PT-OnOffYesNo" Text="Erweitert"    Value="1" />
+
+
+              <Union SizeInBit="16">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="0" BitOffset="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%010" Name="c%C%Type"             Offset="0" BitOffset="0" ParameterType="%AID%_PT-SMLType" Text="Zählertyp" Value="0" />
+
+                <Parameter Id="%AID%_UP-%TT%%CC%100" Name="c%C%Counter"          Offset="1" BitOffset="0" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%110" Name="c%C%PowerSum"         Offset="1" BitOffset="1" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%120" Name="c%C%Power"            Offset="1" BitOffset="2" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%130" Name="c%C%Current"          Offset="1" BitOffset="3" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%140" Name="c%C%Voltage"          Offset="1" BitOffset="4" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%150" Name="c%C%Frequency"        Offset="1" BitOffset="5" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%160" Name="c%C%Identifikation"   Offset="1" BitOffset="6" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%190" Name="c%C%CounterWh"        Offset="1" BitOffset="7" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="0" />
+              </Union>
+
+              <Union SizeInBit="8">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="2" BitOffset="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%101" Name="c%C%CounterChange"        Offset="0" BitOffset="0"  ParameterType="%AID%_PT-OnOffYesNo" Text="Sende bei Änderung" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%111" Name="c%C%PowerSumChange"       Offset="0" BitOffset="1"  ParameterType="%AID%_PT-OnOffYesNo" Text="Sende bei Änderung" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%121" Name="c%C%PowerChange"          Offset="0" BitOffset="2"  ParameterType="%AID%_PT-OnOffYesNo" Text="Sende bei Änderung" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%131" Name="c%C%CurrentChange"        Offset="0" BitOffset="3"  ParameterType="%AID%_PT-OnOffYesNo" Text="Sende bei Änderung" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%141" Name="c%C%VoltageChange"        Offset="0" BitOffset="4"  ParameterType="%AID%_PT-OnOffYesNo" Text="Sende bei Änderung" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%151" Name="c%C%FrequencyChange"      Offset="0" BitOffset="5"  ParameterType="%AID%_PT-OnOffYesNo" Text="Sende bei Änderung" Value="0" />
+              </Union>
+
+              <Union SizeInBit="96">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="3" BitOffset="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%102" Name="c%C%CounterChangeV"       Offset="0" BitOffset="0"  ParameterType="%AID%_PT-SMLOnChange" Text="" Value="1" SuffixText="je x kWh" />
+                <Parameter Id="%AID%_UP-%TT%%CC%112" Name="c%C%PowerSumChangeV"      Offset="2" BitOffset="0"  ParameterType="%AID%_PT-SMLOnChange" Text="" Value="1" SuffixText="je x Watt" />
+                <Parameter Id="%AID%_UP-%TT%%CC%122" Name="c%C%PowerChangeV"         Offset="4" BitOffset="0"  ParameterType="%AID%_PT-SMLOnChange" Text="" Value="1" SuffixText="je x Watt" />
+                <Parameter Id="%AID%_UP-%TT%%CC%132" Name="c%C%CurrentChangeV"       Offset="6" BitOffset="0"  ParameterType="%AID%_PT-SMLOnChange" Text="" Value="1" SuffixText="je 0,x Ampere" />
+                <Parameter Id="%AID%_UP-%TT%%CC%142" Name="c%C%VoltageChangeV"       Offset="8" BitOffset="0"  ParameterType="%AID%_PT-SMLOnChange" Text="" Value="1" SuffixText="je 0,x Volt" />
+                <Parameter Id="%AID%_UP-%TT%%CC%152" Name="c%C%FrequencyChangeV"     Offset="10" BitOffset="0" ParameterType="%AID%_PT-SMLOnChange" Text="" Value="1" SuffixText="je 0,x Herz" />
+              </Union>
+
+              <Union SizeInBit="8">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="15" BitOffset="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%103" Name="c%C%CounterCyclic"         Offset="0" BitOffset="0" ParameterType="%AID%_PT-OnOffYesNo" Text="Sende nur alle" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%113" Name="c%C%PowerSumCyclic"        Offset="0" BitOffset="1" ParameterType="%AID%_PT-OnOffYesNo" Text="Sende nur alle" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%123" Name="c%C%PowerCyclic"           Offset="0" BitOffset="2" ParameterType="%AID%_PT-OnOffYesNo" Text="Sende nur alle" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%133" Name="c%C%CurrentCyclic"         Offset="0" BitOffset="3" ParameterType="%AID%_PT-OnOffYesNo" Text="Sende nur alle" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%143" Name="c%C%VoltageCyclic"         Offset="0" BitOffset="4" ParameterType="%AID%_PT-OnOffYesNo" Text="Sende nur alle" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%153" Name="c%C%FrequencyCyclic"       Offset="0" BitOffset="5" ParameterType="%AID%_PT-OnOffYesNo" Text="Sende nur alle" Value="1" />
+              </Union>
+
+              <Union SizeInBit="96">
+                <Memory CodeSegment="%AID%_RS-04-00000" Offset="16" BitOffset="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%105" Name="c%C%CounterCyclicTimeBase"    Offset="0"  BitOffset="0" ParameterType="%AID%_PT-DelayBase"     Text="" Value="2" />
+                <Parameter Id="%AID%_UP-%TT%%CC%104" Name="c%C%CounterCyclicTime"        Offset="0"  BitOffset="2" ParameterType="%AID%_PT-DelayTimeMin1" Text="" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%115" Name="c%C%PowerSumCyclicTimeBase"   Offset="2"  BitOffset="0" ParameterType="%AID%_PT-DelayBase"     Text="" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%114" Name="c%C%PowerSumCyclicTime"       Offset="2"  BitOffset="2" ParameterType="%AID%_PT-DelayTimeMin1" Text="" Value="5" />
+                <Parameter Id="%AID%_UP-%TT%%CC%125" Name="c%C%PowerCyclicTimeBase"      Offset="4"  BitOffset="0" ParameterType="%AID%_PT-DelayBase"     Text="" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%124" Name="c%C%PowerCyclicTime"          Offset="4"  BitOffset="2" ParameterType="%AID%_PT-DelayTimeMin1" Text="" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%135" Name="c%C%CurrentCyclicTimeBase"    Offset="6"  BitOffset="0" ParameterType="%AID%_PT-DelayBase"     Text="" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%134" Name="c%C%CurrentCyclicTime"        Offset="6"  BitOffset="2" ParameterType="%AID%_PT-DelayTimeMin1" Text="" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%145" Name="c%C%VoltageCyclicTimeBase"    Offset="8"  BitOffset="0" ParameterType="%AID%_PT-DelayBase"     Text="" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%144" Name="c%C%VoltageCyclicTime"        Offset="8"  BitOffset="2" ParameterType="%AID%_PT-DelayTimeMin1" Text="" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%155" Name="c%C%FrequencyCyclicTimeBase"  Offset="10" BitOffset="0" ParameterType="%AID%_PT-DelayBase"     Text="" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%%CC%154" Name="c%C%FrequencyCyclicTime"      Offset="10" BitOffset="2" ParameterType="%AID%_PT-DelayTimeMin1" Text="" Value="1" />
+              </Union>
+            </Parameters>
+            <ParameterRefs>
+              <ParameterRef Id="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" RefId="%AID%_P-%TT%%CC%000" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" RefId="%AID%_P-%TT%%CC%001" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%002_R-%TT%%CC%00201" RefId="%AID%_P-%TT%%CC%002" />
+              <ParameterRef Id="%AID%_P-%TT%%CC%003_R-%TT%%CC%00301" RefId="%AID%_P-%TT%%CC%003" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%010_R-%TT%%CC%01001" RefId="%AID%_UP-%TT%%CC%010" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%100_R-%TT%%CC%10001" RefId="%AID%_UP-%TT%%CC%100" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%110_R-%TT%%CC%11001" RefId="%AID%_UP-%TT%%CC%110" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%120_R-%TT%%CC%12001" RefId="%AID%_UP-%TT%%CC%120" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%130_R-%TT%%CC%13001" RefId="%AID%_UP-%TT%%CC%130" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%140_R-%TT%%CC%14001" RefId="%AID%_UP-%TT%%CC%140" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%150_R-%TT%%CC%15001" RefId="%AID%_UP-%TT%%CC%150" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%160_R-%TT%%CC%16001" RefId="%AID%_UP-%TT%%CC%160" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%190_R-%TT%%CC%19001" RefId="%AID%_UP-%TT%%CC%190" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%101_R-%TT%%CC%10101" RefId="%AID%_UP-%TT%%CC%101" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%111_R-%TT%%CC%11101" RefId="%AID%_UP-%TT%%CC%111" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%121_R-%TT%%CC%12101" RefId="%AID%_UP-%TT%%CC%121" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%131_R-%TT%%CC%13101" RefId="%AID%_UP-%TT%%CC%131" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%141_R-%TT%%CC%14101" RefId="%AID%_UP-%TT%%CC%141" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%151_R-%TT%%CC%15101" RefId="%AID%_UP-%TT%%CC%151" />              
+              <ParameterRef Id="%AID%_UP-%TT%%CC%102_R-%TT%%CC%10201" RefId="%AID%_UP-%TT%%CC%102" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%112_R-%TT%%CC%11201" RefId="%AID%_UP-%TT%%CC%112" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%122_R-%TT%%CC%12201" RefId="%AID%_UP-%TT%%CC%122" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%132_R-%TT%%CC%13201" RefId="%AID%_UP-%TT%%CC%132" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%142_R-%TT%%CC%14201" RefId="%AID%_UP-%TT%%CC%142" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%152_R-%TT%%CC%15201" RefId="%AID%_UP-%TT%%CC%152" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%103_R-%TT%%CC%10301" RefId="%AID%_UP-%TT%%CC%103" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%113_R-%TT%%CC%11301" RefId="%AID%_UP-%TT%%CC%113" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%123_R-%TT%%CC%12301" RefId="%AID%_UP-%TT%%CC%123" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%133_R-%TT%%CC%13301" RefId="%AID%_UP-%TT%%CC%133" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%143_R-%TT%%CC%14301" RefId="%AID%_UP-%TT%%CC%143" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%153_R-%TT%%CC%15301" RefId="%AID%_UP-%TT%%CC%153" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%104_R-%TT%%CC%10401" RefId="%AID%_UP-%TT%%CC%104" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%114_R-%TT%%CC%11401" RefId="%AID%_UP-%TT%%CC%114" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%124_R-%TT%%CC%12401" RefId="%AID%_UP-%TT%%CC%124" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%134_R-%TT%%CC%13401" RefId="%AID%_UP-%TT%%CC%134" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%144_R-%TT%%CC%14401" RefId="%AID%_UP-%TT%%CC%144" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%154_R-%TT%%CC%15401" RefId="%AID%_UP-%TT%%CC%154" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%105_R-%TT%%CC%10501" RefId="%AID%_UP-%TT%%CC%105" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%115_R-%TT%%CC%11501" RefId="%AID%_UP-%TT%%CC%115" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%125_R-%TT%%CC%12501" RefId="%AID%_UP-%TT%%CC%125" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%135_R-%TT%%CC%13501" RefId="%AID%_UP-%TT%%CC%135" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%145_R-%TT%%CC%14501" RefId="%AID%_UP-%TT%%CC%145" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%155_R-%TT%%CC%15501" RefId="%AID%_UP-%TT%%CC%155" />
+            </ParameterRefs>
+            <ComObjectTable>
+              <ComObject Id="%AID%_O-%TT%%CC%000" Name="c%C%Identifier"      Number="%K0%"  ObjectSize="14 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-16-1"  FunctionText="Smartmeter %Z%, OBIS 96.1.0"     Text="{{0:Smartmeter %Z%}}: Identifikationsnummer" />
+              <ComObject Id="%AID%_O-%TT%%CC%001" Name="c%C%CounterF1In"     Number="%K1%"  ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-13-13" FunctionText="Smartmeter %Z%, OBIS 1.8.0, kWh" Text="{{0:Smartmeter %Z%}}: Wirkarbeit Verbrauch Summe (kWh)"  />
+              <ComObject Id="%AID%_O-%TT%%CC%002" Name="c%C%CounterF2In"     Number="%K2%"  ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-13-10" FunctionText="Smartmeter %Z%, OBIS 1.8.0, Wh"  Text="{{0:Smartmeter %Z%}}: Wirkarbeit Verbrauch Summe (Wh)"  />
+              <ComObject Id="%AID%_O-%TT%%CC%003" Name="c%C%CounterF1InT1"   Number="%K3%"  ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-13-13" FunctionText="Smartmeter %Z%, OBIS 1.8.1, kWh" Text="{{0:Smartmeter %Z%}}: Wirkarbeit Verbrauch Tarif 1 (kWh)"  />
+              <ComObject Id="%AID%_O-%TT%%CC%004" Name="c%C%CounterF2InT1"   Number="%K4%"  ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-13-10" FunctionText="Smartmeter %Z%, OBIS 1.8.1, kW"  Text="{{0:Smartmeter %Z%}}: Wirkarbeit Verbrauch Tarif 1 (Wh)" />
+              <ComObject Id="%AID%_O-%TT%%CC%005" Name="c%C%CounterF1InT2"   Number="%K5%"  ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-13-13" FunctionText="Smartmeter %Z%, OBIS 1.8.2, kWh" Text="{{0:Smartmeter %Z%}}: Wirkarbeit Verbrauch Tarif 2 (kWh)" />
+              <ComObject Id="%AID%_O-%TT%%CC%006" Name="c%C%CounterF2InT2"   Number="%K6%"  ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-13-10" FunctionText="Smartmeter %Z%, OBIS 1.8.2, kW"  Text="{{0:Smartmeter %Z%}}: Wirkarbeit Verbrauch Tarif 2 (kW)"  />
+              <ComObject Id="%AID%_O-%TT%%CC%007" Name="c%C%CounterF1Out"    Number="%K7%"  ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-13-13" FunctionText="Smartmeter %Z%, OBIS 2.8.0, kWh" Text="{{0:Smartmeter %Z%}}: Wirkarbeit Einspeisung Summe (kWh)" />
+              <ComObject Id="%AID%_O-%TT%%CC%008" Name="c%C%CounterF2Out"    Number="%K8%"  ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-13-10" FunctionText="Smartmeter %Z%, OBIS 2.8.0, Wh"  Text="{{0:Smartmeter %Z%}}: Wirkarbeit Einspeisung Summe (Wh)"  />
+              <ComObject Id="%AID%_O-%TT%%CC%009" Name="c%C%CounterF1OutT1"  Number="%K9%"  ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-13-13" FunctionText="Smartmeter %Z%, OBIS 2.8.1, kWh" Text="{{0:Smartmeter %Z%}}: Wirkarbeit Einspeisung Tarif 1 (kWh)" />
+              <ComObject Id="%AID%_O-%TT%%CC%010" Name="c%C%CounterF2OutT1"  Number="%K10%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-13-10" FunctionText="Smartmeter %Z%, OBIS 2.8.1, kW"  Text="{{0:Smartmeter %Z%}}: Wirkarbeit Einspeisung Tarif 1 (kW)" />
+              <ComObject Id="%AID%_O-%TT%%CC%011" Name="c%C%CounterF1OutT2"  Number="%K11%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-13-13" FunctionText="Smartmeter %Z%, OBIS 2.8.2, kWh" Text="{{0:Smartmeter %Z%}}: Wirkarbeit Einspeisung Tarif 2 (kWh)" />
+              <ComObject Id="%AID%_O-%TT%%CC%012" Name="c%C%CounterF2OutT2"  Number="%K12%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-13-10" FunctionText="Smartmeter %Z%, OBIS 2.8.2, kW"  Text="{{0:Smartmeter %Z%}}: Wirkarbeit Einspeisung Tarif 2 (kW)"/>
+              <ComObject Id="%AID%_O-%TT%%CC%013" Name="c%C%Power"           Number="%K13%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-56" FunctionText="Smartmeter %Z%, OBIS 16.7.0"     Text="{{0:Smartmeter %Z%}}: Wirkleistung Summe"/>
+              <ComObject Id="%AID%_O-%TT%%CC%014" Name="c%C%PowerL1"         Number="%K14%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-56" FunctionText="Smartmeter %Z%, OBIS 36.7.0"     Text="{{0:Smartmeter %Z%}}: Wirkleistung L1"/>
+              <ComObject Id="%AID%_O-%TT%%CC%015" Name="c%C%PowerL2"         Number="%K15%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-56" FunctionText="Smartmeter %Z%, OBIS 56.7.0"     Text="{{0:Smartmeter %Z%}}: Wirkleistung L2"/>
+              <ComObject Id="%AID%_O-%TT%%CC%016" Name="c%C%PowerL3"         Number="%K16%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-56" FunctionText="Smartmeter %Z%, OBIS 76.7.0"     Text="{{0:Smartmeter %Z%}}: Wirkleistung L3"/>
+              <ComObject Id="%AID%_O-%TT%%CC%017" Name="c%C%Frequency"       Number="%K17%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-33" FunctionText="Smartmeter %Z%, OBIS 14.7.0"     Text="{{0:Smartmeter %Z%}}: Frequenz"/>
+              <ComObject Id="%AID%_O-%TT%%CC%018" Name="c%C%VoltageL1"       Number="%K18%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-27" FunctionText="Smartmeter %Z%, OBIS 32.7.0"     Text="{{0:Smartmeter %Z%}}: Spannung L1"/>
+              <ComObject Id="%AID%_O-%TT%%CC%019" Name="c%C%VoltageL2"       Number="%K19%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-27" FunctionText="Smartmeter %Z%, OBIS 52.7.0"     Text="{{0:Smartmeter %Z%}}: Spannung L2"/>
+              <ComObject Id="%AID%_O-%TT%%CC%020" Name="c%C%VoltageL3"       Number="%K20%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-27" FunctionText="Smartmeter %Z%, OBIS 72.7.0"     Text="{{0:Smartmeter %Z%}}: Spannung L3"/>
+              <ComObject Id="%AID%_O-%TT%%CC%021" Name="c%C%CurrentL1"       Number="%K21%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-19" FunctionText="Smartmeter %Z%, OBIS 31.7.0"     Text="{{0:Smartmeter %Z%}}: Strom L1"/>
+              <ComObject Id="%AID%_O-%TT%%CC%022" Name="c%C%CurrentL2"       Number="%K22%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-19" FunctionText="Smartmeter %Z%, OBIS 51.7.0"     Text="{{0:Smartmeter %Z%}}: Strom L2"/>
+              <ComObject Id="%AID%_O-%TT%%CC%023" Name="c%C%CurrentL3"       Number="%K23%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-19" FunctionText="Smartmeter %Z%, OBIS 71.7.0"     Text="{{0:Smartmeter %Z%}}: Strom L3"/>
+            </ComObjectTable>
+            <ComObjectRefs>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%000_R-%TT%%CC%00001" RefId="%AID%_O-%TT%%CC%000" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" />
+              <ComObjectRef Id="%AID%_O-%TT%%CC%001_R-%TT%%CC%00101" RefId="%AID%_O-%TT%%CC%001" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" />
+              <ComObjectRef Id="%AID%_O-%TT%%CC%002_R-%TT%%CC%00201" RefId="%AID%_O-%TT%%CC%002" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" />
+              <ComObjectRef Id="%AID%_O-%TT%%CC%003_R-%TT%%CC%00301" RefId="%AID%_O-%TT%%CC%003" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" />
+              <ComObjectRef Id="%AID%_O-%TT%%CC%004_R-%TT%%CC%00401" RefId="%AID%_O-%TT%%CC%004" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" />
+              <ComObjectRef Id="%AID%_O-%TT%%CC%005_R-%TT%%CC%00501" RefId="%AID%_O-%TT%%CC%005" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" />
+              <ComObjectRef Id="%AID%_O-%TT%%CC%006_R-%TT%%CC%00601" RefId="%AID%_O-%TT%%CC%006" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%007_R-%TT%%CC%00701" RefId="%AID%_O-%TT%%CC%007" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%008_R-%TT%%CC%00801" RefId="%AID%_O-%TT%%CC%008" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%009_R-%TT%%CC%00901" RefId="%AID%_O-%TT%%CC%009" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%010_R-%TT%%CC%01001" RefId="%AID%_O-%TT%%CC%010" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%011_R-%TT%%CC%01101" RefId="%AID%_O-%TT%%CC%011" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%012_R-%TT%%CC%01201" RefId="%AID%_O-%TT%%CC%012" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%013_R-%TT%%CC%01301" RefId="%AID%_O-%TT%%CC%013" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%014_R-%TT%%CC%01401" RefId="%AID%_O-%TT%%CC%014" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%015_R-%TT%%CC%01501" RefId="%AID%_O-%TT%%CC%015" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%016_R-%TT%%CC%01601" RefId="%AID%_O-%TT%%CC%016" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%017_R-%TT%%CC%01701" RefId="%AID%_O-%TT%%CC%017" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%018_R-%TT%%CC%01801" RefId="%AID%_O-%TT%%CC%018" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%019_R-%TT%%CC%01901" RefId="%AID%_O-%TT%%CC%019" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%020_R-%TT%%CC%02001" RefId="%AID%_O-%TT%%CC%020" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%021_R-%TT%%CC%02101" RefId="%AID%_O-%TT%%CC%021" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%022_R-%TT%%CC%02201" RefId="%AID%_O-%TT%%CC%022" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%023_R-%TT%%CC%02301" RefId="%AID%_O-%TT%%CC%023" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+            </ComObjectRefs>
+          </Static>
+          <Dynamic>
+            <ChannelIndependentBlock>
+              <!-- START INCLUDE HERE -->
+              <choose ParamRefId="%AID%_UP-%TT%00001_R-%TT%0000101">
+                <when test="&gt;=%C%">
+                  <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%Page" Text="Smartmeter %Z%: {{0: ...}}" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" Icon="meter-electric-outline" HelpContext="Empty" ShowInComObjectTree="true">
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Konfiguration" UIHint="Headline" />
+                    <!-- Name -->
+                    <ParameterRefRef RefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" IndentLevel="1" HelpContext="%DOC%" />
+                    <!-- Type -->
+                    <ParameterRefRef RefId="%AID%_UP-%TT%%CC%010_R-%TT%%CC%01001" IndentLevel="1" HelpContext="%DOC%" />
+
+                    <choose ParamRefId="%AID%_UP-%TT%%CC%010_R-%TT%%CC%01001">
+                      <when test=">0">
+
+                        <ParameterSeparator Id="%AID%_PS-nnn" Text="Funktionen" UIHint="Headline" />
+                        <ParameterRefRef RefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" IndentLevel="1" HelpContext="%DOC%" />
+                        <ParameterRefRef RefId="%AID%_P-%TT%%CC%002_R-%TT%%CC%00201" IndentLevel="1" HelpContext="%DOC%" />
+                        <ParameterRefRef RefId="%AID%_P-%TT%%CC%003_R-%TT%%CC%00301" IndentLevel="1" HelpContext="%DOC%" />
+                        <choose ParamRefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101">
+                        
+                          <when test="1">
+                            <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%Counter" Text="Zählerstände" Icon="counter" HelpContext="Empty" ShowInComObjectTree="true">
+
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="Zählerstände (kWh)" UIHint="Headline" />
+                              <ParameterRefRef RefId="%AID%_UP-%TT%%CC%100_R-%TT%%CC%10001" IndentLevel="1" HelpContext="Empty" />
+                              <choose ParamRefId="%AID%_UP-%TT%%CC%100_R-%TT%%CC%10001">
+                                <when test="1">
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%101_R-%TT%%CC%10101" IndentLevel="1" HelpContext="Empty" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%101_R-%TT%%CC%10101">
+                                    <when test="1">
+                                      <ParameterBlock Id="%AID%_PB-nnn" Name="PowerSumChange" Inline="true" Layout="Grid" HelpContext="Empty">
+                                        <Rows>
+                                          <Row Id="%AID%_PB-nnn_R-1" Name="Row1" />
+                                        </Rows>
+                                        <Columns>
+                                          <Column Id="%AID%_PB-nnn_C-1" Name="Col1" Width="45%" />
+                                          <Column Id="%AID%_PB-nnn_C-2" Name="Col2" Width="35%" />
+                                        </Columns>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%102_R-%TT%%CC%10201" Cell="1,2" IndentLevel="1" />
+                                      </ParameterBlock>
+                                    </when>
+                                  </choose>
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%103_R-%TT%%CC%10301" IndentLevel="1" HelpContext="Empty" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%103_R-%TT%%CC%10301">
+                                    <when test="1">
+                                      <ParameterBlock Id="%AID%_PB-nnn" Name="PowerSumCycle" Inline="true" Layout="Grid" HelpContext="Empty">
+                                        <Rows>
+                                          <Row Id="%AID%_PB-nnn_R-1" Name="Row1" />
+                                        </Rows>
+                                        <Columns>
+                                          <Column Id="%AID%_PB-nnn_C-1" Name="Col1" Width="45%" />
+                                          <Column Id="%AID%_PB-nnn_C-2" Name="Col2" Width="15%" />
+                                          <Column Id="%AID%_PB-nnn_C-3" Name="Col3" Width="20%" />
+                                        </Columns>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%104_R-%TT%%CC%10401" Cell="1,2" />
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%105_R-%TT%%CC%10501" Cell="1,3" />
+                                      </ParameterBlock>
+                                    </when>
+                                  </choose>
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%001_R-%TT%%CC%00101" />
+
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%010_R-%TT%%CC%01001">
+                                    <when test="2 4">
+                                      <ComObjectRefRef RefId="%AID%_O-%TT%%CC%003_R-%TT%%CC%00301" />
+                                      <ComObjectRefRef RefId="%AID%_O-%TT%%CC%005_R-%TT%%CC%00501" />
+                                    </when>
+                                  </choose>
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%010_R-%TT%%CC%01001">
+                                    <when test="3 4">
+                                      <ComObjectRefRef RefId="%AID%_O-%TT%%CC%007_R-%TT%%CC%00701" />
+                                    </when>
+                                  </choose>
+                                </when>
+                              </choose>
+
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="Zählerstände (Wh)" UIHint="Headline" />
+                              <ParameterRefRef RefId="%AID%_UP-%TT%%CC%190_R-%TT%%CC%19001" IndentLevel="1" HelpContext="Empty" />
+                              <choose ParamRefId="%AID%_UP-%TT%%CC%190_R-%TT%%CC%19001">
+                                <when test="1">
+                                  <ParameterSeparator Id="%AID%_PS-nnn" Text="Das entsprechende Kommunikationsobjekt ist nicht dafür gedacht, die Daten per Gruppenadresse auf den Bus zu übertragen. Sie sind primär dazu vorgesehen, die Daten mit dem Logikmodul oder dem virtuellen Zähler weiterzuverarbeiten." UIHint="Information" />
+
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%002_R-%TT%%CC%00201" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%010_R-%TT%%CC%01001">
+                                    <when test="2 4">
+                                      <ComObjectRefRef RefId="%AID%_O-%TT%%CC%004_R-%TT%%CC%00401" />
+                                      <ComObjectRefRef RefId="%AID%_O-%TT%%CC%006_R-%TT%%CC%00601" />
+                                    </when>
+                                  </choose>
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%010_R-%TT%%CC%01001">
+                                    <when test="3 4">
+                                      <ComObjectRefRef RefId="%AID%_O-%TT%%CC%008_R-%TT%%CC%00801" />
+                                    </when>
+                                  </choose>
+                                </when>
+                              </choose>
+
+
+                            </ParameterBlock>
+                          </when>
+                        </choose>
+
+                        <choose ParamRefId="%AID%_P-%TT%%CC%002_R-%TT%%CC%00201">
+                          <when test="1">
+                            <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%Power" Text="Messwerte" Icon="gauge" HelpContext="Empty" ShowInComObjectTree="true">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="Für den Zugriff auf die Messwerte müssen diese einmalig mit einer PIN freigeschaltet werden. Welche Werte tatsächlich verfügbar sind, kann je nach Betreiber und Zähler variieren." UIHint="Information" />
+                                                            
+
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="Wirkleistung (Summe)" UIHint="Headline" />
+                              <ParameterRefRef RefId="%AID%_UP-%TT%%CC%110_R-%TT%%CC%11001" IndentLevel="1" HelpContext="Empty" />
+                              <choose ParamRefId="%AID%_UP-%TT%%CC%110_R-%TT%%CC%11001">
+                                <when test="1">
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%111_R-%TT%%CC%11101" IndentLevel="1" HelpContext="Empty" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%111_R-%TT%%CC%11101">
+                                    <when test="1">
+                                      <ParameterBlock Id="%AID%_PB-nnn" Name="PowerSumChange" Inline="true" Layout="Grid" HelpContext="Empty">
+                                        <Rows>
+                                          <Row Id="%AID%_PB-nnn_R-1" Name="Row1" />
+                                        </Rows>
+                                        <Columns>
+                                          <Column Id="%AID%_PB-nnn_C-1" Name="Col1" Width="45%" />
+                                          <Column Id="%AID%_PB-nnn_C-2" Name="Col2" Width="35%" />
+                                        </Columns>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%112_R-%TT%%CC%11201" Cell="1,2" IndentLevel="1" />
+                                      </ParameterBlock>
+                                    </when>
+                                  </choose>
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%113_R-%TT%%CC%11301" IndentLevel="1" HelpContext="Empty" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%113_R-%TT%%CC%11301">
+                                    <when test="1">
+                                      <ParameterBlock Id="%AID%_PB-nnn" Name="PowerSumCycle" Inline="true" Layout="Grid" HelpContext="Empty">
+                                        <Rows>
+                                          <Row Id="%AID%_PB-nnn_R-1" Name="Row1" />
+                                        </Rows>
+                                        <Columns>
+                                          <Column Id="%AID%_PB-nnn_C-1" Name="Col1" Width="45%" />
+                                          <Column Id="%AID%_PB-nnn_C-2" Name="Col2" Width="15%" />
+                                          <Column Id="%AID%_PB-nnn_C-3" Name="Col3" Width="20%" />
+                                        </Columns>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%114_R-%TT%%CC%11401" Cell="1,2" />
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%115_R-%TT%%CC%11501" Cell="1,3" />
+                                      </ParameterBlock>
+                                    </when>
+                                  </choose>
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%013_R-%TT%%CC%01301" />
+                                </when>
+                              </choose>
+
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="Wirkleistung (je Phase)" UIHint="Headline" />
+                              <ParameterRefRef RefId="%AID%_UP-%TT%%CC%120_R-%TT%%CC%12001" IndentLevel="1" HelpContext="Empty" />
+                              <choose ParamRefId="%AID%_UP-%TT%%CC%120_R-%TT%%CC%12001">
+                                <when test="1">
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%121_R-%TT%%CC%12101" IndentLevel="1" HelpContext="Empty" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%121_R-%TT%%CC%12101">
+                                    <when test="1">
+                                      <ParameterBlock Id="%AID%_PB-nnn" Name="PowerChange" Inline="true" Layout="Grid" HelpContext="Empty">
+                                        <Rows>
+                                          <Row Id="%AID%_PB-nnn_R-1" Name="Row1" />
+                                        </Rows>
+                                        <Columns>
+                                          <Column Id="%AID%_PB-nnn_C-1" Name="Col1" Width="45%" />
+                                          <Column Id="%AID%_PB-nnn_C-2" Name="Col2" Width="35%" />
+                                        </Columns>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%122_R-%TT%%CC%12201" Cell="1,2" />
+                                      </ParameterBlock>
+                                    </when>
+                                  </choose>
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%123_R-%TT%%CC%12301" IndentLevel="1" HelpContext="Empty" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%123_R-%TT%%CC%12301">
+                                    <when test="1">
+                                      <ParameterBlock Id="%AID%_PB-nnn" Name="PowerCycle" Inline="true" Layout="Grid" HelpContext="Empty">
+                                        <Rows>
+                                          <Row Id="%AID%_PB-nnn_R-1" Name="Row1" />
+                                        </Rows>
+                                        <Columns>
+                                          <Column Id="%AID%_PB-nnn_C-1" Name="Col1" Width="45%" />
+                                          <Column Id="%AID%_PB-nnn_C-2" Name="Col2" Width="15%" />
+                                          <Column Id="%AID%_PB-nnn_C-3" Name="Col3" Width="20%" />
+                                        </Columns>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%124_R-%TT%%CC%12401" Cell="1,2" />
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%125_R-%TT%%CC%12501" Cell="1,3" />
+                                      </ParameterBlock>
+                                    </when>
+                                  </choose>
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%014_R-%TT%%CC%01401" />
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%015_R-%TT%%CC%01501" />
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%016_R-%TT%%CC%01601" />
+                                </when>
+                              </choose>
+
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="Strom (je Phase)" UIHint="Headline" />
+                              <ParameterRefRef RefId="%AID%_UP-%TT%%CC%130_R-%TT%%CC%13001" IndentLevel="1" HelpContext="Empty" />
+                              <choose ParamRefId="%AID%_UP-%TT%%CC%130_R-%TT%%CC%13001">
+                                <when test="1">
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%131_R-%TT%%CC%13101" IndentLevel="1" HelpContext="Empty" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%131_R-%TT%%CC%13101">
+                                    <when test="1">
+                                      <ParameterBlock Id="%AID%_PB-nnn" Name="CurrentChange" Inline="true" Layout="Grid" HelpContext="Empty">
+                                        <Rows>
+                                          <Row Id="%AID%_PB-nnn_R-1" Name="Row1" />
+                                        </Rows>
+                                        <Columns>
+                                          <Column Id="%AID%_PB-nnn_C-1" Name="Col1" Width="45%" />
+                                          <Column Id="%AID%_PB-nnn_C-2" Name="Col2" Width="35%" />
+                                        </Columns>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%132_R-%TT%%CC%13201" Cell="1,2" />
+                                      </ParameterBlock>
+                                    </when>
+                                  </choose>
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%133_R-%TT%%CC%13301" IndentLevel="1" HelpContext="Empty" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%133_R-%TT%%CC%13301">
+                                    <when test="1">
+                                      <ParameterBlock Id="%AID%_PB-nnn" Name="CurrentCycle" Inline="true" Layout="Grid" HelpContext="Empty">
+                                        <Rows>
+                                          <Row Id="%AID%_PB-nnn_R-1" Name="Row1" />
+                                        </Rows>
+                                        <Columns>
+                                          <Column Id="%AID%_PB-nnn_C-1" Name="Col1" Width="45%" />
+                                          <Column Id="%AID%_PB-nnn_C-2" Name="Col2" Width="15%" />
+                                          <Column Id="%AID%_PB-nnn_C-3" Name="Col3" Width="20%" />
+                                        </Columns>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%134_R-%TT%%CC%13401" Cell="1,2" />
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%135_R-%TT%%CC%13501" Cell="1,3" />
+                                      </ParameterBlock>
+                                    </when>
+                                  </choose>
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%021_R-%TT%%CC%02101" />
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%022_R-%TT%%CC%02201" />
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%023_R-%TT%%CC%02301" />
+                                </when>
+                              </choose>
+
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="Spannung (je Phase)" UIHint="Headline" />
+                              <ParameterRefRef RefId="%AID%_UP-%TT%%CC%140_R-%TT%%CC%14001" IndentLevel="1" HelpContext="Empty" />
+                              <choose ParamRefId="%AID%_UP-%TT%%CC%140_R-%TT%%CC%14001">
+                                <when test="1">
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%141_R-%TT%%CC%14101" IndentLevel="1" HelpContext="Empty" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%141_R-%TT%%CC%14101">
+                                    <when test="1">
+                                      <ParameterBlock Id="%AID%_PB-nnn" Name="CurrentChange" Inline="true" Layout="Grid" HelpContext="Empty">
+                                        <Rows>
+                                          <Row Id="%AID%_PB-nnn_R-1" Name="Row1" />
+                                        </Rows>
+                                        <Columns>
+                                          <Column Id="%AID%_PB-nnn_C-1" Name="Col1" Width="45%" />
+                                          <Column Id="%AID%_PB-nnn_C-2" Name="Col2" Width="35%" />
+                                        </Columns>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%142_R-%TT%%CC%14201" Cell="1,2" />
+                                      </ParameterBlock>
+                                    </when>
+                                  </choose>
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%143_R-%TT%%CC%14301" IndentLevel="1" HelpContext="Empty" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%143_R-%TT%%CC%14301">
+                                    <when test="1">
+                                      <ParameterBlock Id="%AID%_PB-nnn" Name="CurrentCycle" Inline="true" Layout="Grid" HelpContext="Empty">
+                                        <Rows>
+                                          <Row Id="%AID%_PB-nnn_R-1" Name="Row1" />
+                                        </Rows>
+                                        <Columns>
+                                          <Column Id="%AID%_PB-nnn_C-1" Name="Col1" Width="45%" />
+                                          <Column Id="%AID%_PB-nnn_C-2" Name="Col2" Width="15%" />
+                                          <Column Id="%AID%_PB-nnn_C-3" Name="Col3" Width="20%" />
+                                        </Columns>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%144_R-%TT%%CC%14401" Cell="1,2" />
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%145_R-%TT%%CC%14501" Cell="1,3" />
+                                      </ParameterBlock>
+                                    </when>
+                                  </choose>
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%018_R-%TT%%CC%01801" />
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%019_R-%TT%%CC%01901" />
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%020_R-%TT%%CC%02001" />
+                                </when>
+                              </choose>
+
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="Frequenz" UIHint="Headline" />
+                              <ParameterRefRef RefId="%AID%_UP-%TT%%CC%150_R-%TT%%CC%15001" IndentLevel="1" HelpContext="Empty" />
+                              <choose ParamRefId="%AID%_UP-%TT%%CC%150_R-%TT%%CC%15001">
+                                <when test="1">
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%151_R-%TT%%CC%15101" IndentLevel="1" HelpContext="Empty" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%151_R-%TT%%CC%15101">
+                                    <when test="1">
+                                      <ParameterBlock Id="%AID%_PB-nnn" Name="CurrentChange" Inline="true" Layout="Grid" HelpContext="Empty">
+                                        <Rows>
+                                          <Row Id="%AID%_PB-nnn_R-1" Name="Row1" />
+                                        </Rows>
+                                        <Columns>
+                                          <Column Id="%AID%_PB-nnn_C-1" Name="Col1" Width="45%" />
+                                          <Column Id="%AID%_PB-nnn_C-2" Name="Col2" Width="35%" />
+                                        </Columns>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%152_R-%TT%%CC%15201" Cell="1,2" />
+                                      </ParameterBlock>
+                                    </when>
+                                  </choose>
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%153_R-%TT%%CC%15301" IndentLevel="1" HelpContext="Empty" />
+                                  <choose ParamRefId="%AID%_UP-%TT%%CC%153_R-%TT%%CC%15301">
+                                    <when test="1">
+                                      <ParameterBlock Id="%AID%_PB-nnn" Name="CurrentCycle" Inline="true" Layout="Grid" HelpContext="Empty">
+                                        <Rows>
+                                          <Row Id="%AID%_PB-nnn_R-1" Name="Row1" />
+                                        </Rows>
+                                        <Columns>
+                                          <Column Id="%AID%_PB-nnn_C-1" Name="Col1" Width="45%" />
+                                          <Column Id="%AID%_PB-nnn_C-2" Name="Col2" Width="15%" />
+                                          <Column Id="%AID%_PB-nnn_C-3" Name="Col3" Width="20%" />
+                                        </Columns>
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%154_R-%TT%%CC%15401" Cell="1,2" />
+                                        <ParameterRefRef RefId="%AID%_UP-%TT%%CC%155_R-%TT%%CC%15501" Cell="1,3" />
+                                      </ParameterBlock>
+                                    </when>
+                                  </choose>
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%017_R-%TT%%CC%01701" />
+                                </when>
+                              </choose>
+                            </ParameterBlock>
+                          </when>
+                        </choose>
+
+                        <choose ParamRefId="%AID%_P-%TT%%CC%003_R-%TT%%CC%00301">
+                          <when test="1">
+                            <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%More" Text="Erweitert" Icon="format-list-text" HelpContext="Empty" ShowInComObjectTree="true">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="Identifikationsnummer" UIHint="Headline" />
+                              <ParameterRefRef RefId="%AID%_UP-%TT%%CC%160_R-%TT%%CC%16001" IndentLevel="1" HelpContext="Empty" />
+                              <choose ParamRefId="%AID%_UP-%TT%%CC%160_R-%TT%%CC%16001">
+                                <when test="1">
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%000_R-%TT%%CC%00001" />
+                                </when>
+                              </choose>
+                            </ParameterBlock>
+                          </when>
+                        </choose>
+
+                      </when>
+                    </choose>
+                  </ParameterBlock>
+                </when>
+              </choose>
+            </ChannelIndependentBlock>
+          </Dynamic>
+        </ApplicationProgram>
+      </ApplicationPrograms>
+    </Manufacturer>
+  </ManufacturerData>
+</KNX>
