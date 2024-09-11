@@ -74,12 +74,12 @@ class SMLChannel : public OpenKNX::Channel
     void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, double value);
     void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, char *value, uint8_t len);
 
-    HardwareSerial *serial();
 
   public:
     SMLChannel(uint8_t index);
 
-    void serial(HardwareSerial *serial);
+    void setSerial(HardwareSerial *serial);
+    HardwareSerial *getSerial();
     void setup() override;
     void loop() override;
     void processInputKo(GroupObject &ko) override;

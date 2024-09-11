@@ -42,14 +42,15 @@ SMLChannel::SMLChannel(uint8_t index)
     _channelIndex = index;
 }
 
-HardwareSerial *SMLChannel::serial()
+HardwareSerial *SMLChannel::getSerial()
 {
     return _serial;
 }
 
-void SMLChannel::serial(HardwareSerial *serial)
+void SMLChannel::setSerial(HardwareSerial *serial)
 {
     _serial = serial;
+    getSerial()->begin(9600);
 }
 
 const std::string SMLChannel::name()
@@ -59,17 +60,14 @@ const std::string SMLChannel::name()
 
 void SMLChannel::setup()
 {
-    if (serial() == nullptr) return;
-
-    serial()->begin(9600);
 }
 
 void SMLChannel::loop()
 {
-    if (serial() == nullptr) return;
+    if (getSerial() == nullptr) return;
 
-    while (serial()->available())
-        writeBuffer(serial()->read());
+    while (getSerial()->available())
+        writeBuffer(getSerial()->read());
 
     parseBuffer();
 }
@@ -178,7 +176,7 @@ int SMLChannel::findSequence(const uint8_t *sequence, const size_t length)
 
 void SMLChannel::resetBuffer()
 {
-    serial()->flush();
+    getSerial()->flush();
     _bufferSize = 0;
 }
 
