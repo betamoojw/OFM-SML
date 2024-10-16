@@ -713,9 +713,12 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
 
         if (openknxSMLModule.debug()) logInfoP("%s: %s", obis, identifier);
 
-        if (knx.configured() && ParamSML_cIdentifikation)
+        if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cIdentifikation)
         {
-            KoSML_cIdentifier.valueNoSend(identifier, DPT_String_8859_1);
+            if (KoSML_cIdentifier.initialized())
+                KoSML_cIdentifier.valueNoSend(identifier, DPT_String_8859_1);
+            else
+                KoSML_cIdentifier.value(identifier, DPT_String_8859_1);
         }
     }
     else

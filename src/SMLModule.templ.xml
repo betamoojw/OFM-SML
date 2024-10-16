@@ -178,8 +178,8 @@
                 <when test="&gt;=%C%">
                   <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%Page" Text="Smartmeter %Z%: {{0: ...}}" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" Icon="meter-electric-outline" HelpContext="Empty" ShowInComObjectTree="true">
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Konfiguration" UIHint="Headline" />
-                    <!-- Name -->
-                    <ParameterRefRef RefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" IndentLevel="1" HelpContext="%DOC%" />
+                    <!-- Beschreibung -->
+                    <ParameterRefRef RefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" IndentLevel="1" HelpContext="BASE-ChannelName" />
                     <!-- Type -->
                     <ParameterRefRef RefId="%AID%_UP-%TT%%CC%010_R-%TT%%CC%01001" IndentLevel="1" HelpContext="%DOC%" />
 
