@@ -78,6 +78,8 @@ void SMLChannel::processInputKo(GroupObject &ko)
 
 void SMLChannel::writeBuffer(uint8_t byte)
 {
+    openknxSMLModule.lastReceived = millis();
+
     if (_bufferSize >= OPENKNX_SML_BUFFER) moveBuffer(1);
 
     _buffer[_bufferSize] = byte;
@@ -226,7 +228,6 @@ uint16_t SMLChannel::crc16(uint8_t &byte, uint16_t crc)
 
 bool SMLChannel::processFile(const uint8_t *message, const size_t length)
 {
-
     sml_file *file = sml_file_parse((uint8_t *)message, length);
     for (int i = 0; i < file->messages_len; i++)
     {
