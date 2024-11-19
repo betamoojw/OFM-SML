@@ -79,7 +79,7 @@ void SMLChannel::processInputKo(GroupObject &ko)
 void SMLChannel::writeBuffer(uint8_t byte)
 {
     openknxSMLModule.lastReceived = millis();
- 
+
     if (_bufferSize >= OPENKNX_SML_BUFFER) moveBuffer(1);
 
     _buffer[_bufferSize] = byte;
@@ -96,15 +96,6 @@ void SMLChannel::parseBuffer()
 
         if (startPos < 0) // keine Startsequenz gefunden
         {
-            if (openknxSMLModule.debug())
-            {
-                logInfoP("No start sequence found");
-                logIndentUp();
-                logHexInfoP(_buffer, _bufferSize);
-                logInfoP("");
-                logIndentDown();
-            }
-
             moveBuffer(_bufferSize - 7); // nehme die letzte 7 zeichen und verwerfe alles davor
             return;
         };
