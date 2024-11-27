@@ -2,6 +2,8 @@
 #include "SMLModule.h"
 #include <sml/sml_file.h>
 
+#define CorrectionOfCycleTimeMS 50
+
 const uint16_t SML_CRC_TABLE[256] PROGMEM =
     {0x0000, 0x1189, 0x2312, 0x329B, 0x4624, 0x57AD, 0x6536, 0x74BF, 0x8C48,
      0x9DC1, 0xAF5A, 0xBED3, 0xCA6C, 0xDBE5, 0xE97E, 0xF8F7, 0x1081, 0x0108,
@@ -323,7 +325,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cCounterChange && abs(_sentCounterIn - counterKwh) >= ParamSML_cCounterChangeV)
                     send = true;
 
-                if (ParamSML_cCounterCyclic && (!_sentCounterInTime || delayCheck(_sentCounterInTime, ParamSML_cCounterCyclicTimeMS)))
+                if (ParamSML_cCounterCyclic && (!_sentCounterInTime || delayCheck(_sentCounterInTime, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
                     send = true;
 
                 if (send)
@@ -345,7 +347,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cCounterChange && abs(_sentCounterInT1 - counterKwh) >= ParamSML_cCounterChangeV)
                     send = true;
 
-                if (ParamSML_cCounterCyclic && (!_sentCounterInT1Time || delayCheck(_sentCounterInT1Time, ParamSML_cCounterCyclicTimeMS)))
+                if (ParamSML_cCounterCyclic && (!_sentCounterInT1Time || delayCheck(_sentCounterInT1Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
                     send = true;
 
                 if (send)
@@ -367,7 +369,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cCounterChange && abs(_sentCounterInT2 - counterKwh) >= ParamSML_cCounterChangeV)
                     send = true;
 
-                if (ParamSML_cCounterCyclic && (!_sentCounterInT2Time || delayCheck(_sentCounterInT2Time, ParamSML_cCounterCyclicTimeMS)))
+                if (ParamSML_cCounterCyclic && (!_sentCounterInT2Time || delayCheck(_sentCounterInT2Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
                     send = true;
 
                 if (send)
@@ -389,7 +391,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cCounterChange && abs(_sentCounterOut - counterKwh) >= ParamSML_cCounterChangeV)
                     send = true;
 
-                if (ParamSML_cCounterCyclic && (!_sentCounterOutTime || delayCheck(_sentCounterOutTime, ParamSML_cCounterCyclicTimeMS)))
+                if (ParamSML_cCounterCyclic && (!_sentCounterOutTime || delayCheck(_sentCounterOutTime, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
                     send = true;
 
                 if (send)
@@ -411,7 +413,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cCounterChange && abs(_sentCounterOutT1 - counterKwh) >= ParamSML_cCounterChangeV)
                     send = true;
 
-                if (ParamSML_cCounterCyclic && (!_sentCounterOutT1Time || delayCheck(_sentCounterOutT1Time, ParamSML_cCounterCyclicTimeMS)))
+                if (ParamSML_cCounterCyclic && (!_sentCounterOutT1Time || delayCheck(_sentCounterOutT1Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
                     send = true;
 
                 if (send)
@@ -433,7 +435,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cCounterChange && abs(_sentCounterOutT2 - counterKwh) >= ParamSML_cCounterChangeV)
                     send = true;
 
-                if (ParamSML_cCounterCyclic && (!_sentCounterOutT2Time || delayCheck(_sentCounterOutT2Time, ParamSML_cCounterCyclicTimeMS)))
+                if (ParamSML_cCounterCyclic && (!_sentCounterOutT2Time || delayCheck(_sentCounterOutT2Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
                     send = true;
 
                 if (send)
@@ -463,7 +465,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cPowerSumChange && fabs(_sentDataPower - value) >= ParamSML_cPowerSumChangeV)
                     send = true;
 
-                if (ParamSML_cPowerSumCyclic && (!_sentDataPowerTime || delayCheck(_sentDataPowerTime, ParamSML_cPowerSumCyclicTimeMS)))
+                if (ParamSML_cPowerSumCyclic && (!_sentDataPowerTime || delayCheck(_sentDataPowerTime, ParamSML_cPowerSumCyclicTimeMS - CorrectionOfCycleTimeMS)))
                     send = true;
 
                 if (send)
@@ -482,7 +484,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cPowerChange && fabs(_sentDataPowerL1 - value) >= ParamSML_cPowerChangeV)
                     send = true;
 
-                if (ParamSML_cPowerCyclic && (!_sentDataPowerL1Time || delayCheck(_sentDataPowerL1Time, ParamSML_cPowerCyclicTimeMS)))
+                if (ParamSML_cPowerCyclic && (!_sentDataPowerL1Time || delayCheck(_sentDataPowerL1Time, ParamSML_cPowerCyclicTimeMS - CorrectionOfCycleTimeMS)))
                     send = true;
 
                 if (send)
@@ -501,7 +503,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cPowerChange && fabs(_sentDataPowerL2 - value) >= ParamSML_cPowerChangeV)
                     send = true;
 
-                if (ParamSML_cPowerCyclic && (!_sentDataPowerL2Time || delayCheck(_sentDataPowerL2Time, ParamSML_cPowerCyclicTimeMS)))
+                if (ParamSML_cPowerCyclic && (!_sentDataPowerL2Time || delayCheck(_sentDataPowerL2Time, ParamSML_cPowerCyclicTimeMS - CorrectionOfCycleTimeMS)))
                     send = true;
 
                 if (send)
@@ -520,7 +522,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cPowerChange && fabs(_sentDataPowerL3 - value) >= ParamSML_cPowerChangeV)
                     send = true;
 
-                if (ParamSML_cPowerCyclic && (!_sentDataPowerL3Time || delayCheck(_sentDataPowerL3Time, ParamSML_cPowerCyclicTimeMS)))
+                if (ParamSML_cPowerCyclic && (!_sentDataPowerL3Time || delayCheck(_sentDataPowerL3Time, ParamSML_cPowerCyclicTimeMS - CorrectionOfCycleTimeMS)))
                     send = true;
 
                 if (send)
@@ -546,7 +548,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cCurrentChange && fabs(_sentDataCurrentL1 - value) >= (double)ParamSML_cCurrentChangeV / 10)
                     send = true;
 
-                if (ParamSML_cCurrentCyclic && (!_sentDataCurrentL1Time || delayCheck(_sentDataCurrentL1Time, ParamSML_cCurrentCyclicTimeMS)))
+                if (ParamSML_cCurrentCyclic && (!_sentDataCurrentL1Time || delayCheck(_sentDataCurrentL1Time, ParamSML_cCurrentCyclicTimeMS - CorrectionOfCycleTimeMS)))
                     send = true;
 
                 if (send)
@@ -565,7 +567,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cCurrentChange && fabs(_sentDataCurrentL2 - value) >= (double)ParamSML_cCurrentChangeV / 10)
                     send = true;
 
-                if (ParamSML_cCurrentCyclic && (!_sentDataCurrentL2Time || delayCheck(_sentDataCurrentL2Time, ParamSML_cCurrentCyclicTimeMS)))
+                if (ParamSML_cCurrentCyclic && (!_sentDataCurrentL2Time || delayCheck(_sentDataCurrentL2Time, ParamSML_cCurrentCyclicTimeMS - CorrectionOfCycleTimeMS)))
                     send = true;
 
                 if (send)
@@ -584,7 +586,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cCurrentChange && fabs(_sentDataCurrentL3 - value) >= (double)ParamSML_cCurrentChangeV / 10)
                     send = true;
 
-                if (ParamSML_cCurrentCyclic && (!_sentDataCurrentL3Time || delayCheck(_sentDataCurrentL3Time, ParamSML_cCurrentCyclicTimeMS)))
+                if (ParamSML_cCurrentCyclic && (!_sentDataCurrentL3Time || delayCheck(_sentDataCurrentL3Time, ParamSML_cCurrentCyclicTimeMS - CorrectionOfCycleTimeMS)))
                     send = true;
 
                 if (send)
@@ -610,7 +612,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cVoltageChange && fabs(_sentDataVoltageL1 - value) >= (double)ParamSML_cVoltageChangeV / 10)
                     send = true;
 
-                if (ParamSML_cVoltageCyclic && (!_sentDataVoltageL1Time || delayCheck(_sentDataVoltageL1Time, ParamSML_cVoltageCyclicTimeMS)))
+                if (ParamSML_cVoltageCyclic && (!_sentDataVoltageL1Time || delayCheck(_sentDataVoltageL1Time, (ParamSML_cVoltageCyclicTimeMS - CorrectionOfCycleTimeMS))))
                     send = true;
 
                 if (send)
@@ -629,7 +631,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cVoltageChange && fabs(_sentDataVoltageL2 - value) >= (double)ParamSML_cVoltageChangeV / 10)
                     send = true;
 
-                if (ParamSML_cVoltageCyclic && (!_sentDataVoltageL2Time || delayCheck(_sentDataVoltageL2Time, ParamSML_cVoltageCyclicTimeMS)))
+                if (ParamSML_cVoltageCyclic && (!_sentDataVoltageL2Time || delayCheck(_sentDataVoltageL2Time, (ParamSML_cVoltageCyclicTimeMS - CorrectionOfCycleTimeMS))))
                     send = true;
 
                 if (send)
@@ -648,7 +650,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 if (ParamSML_cVoltageChange && fabs(_sentDataVoltageL3 - value) >= (double)ParamSML_cVoltageChangeV / 10)
                     send = true;
 
-                if (ParamSML_cVoltageCyclic && (!_sentDataVoltageL3Time || delayCheck(_sentDataVoltageL3Time, ParamSML_cVoltageCyclicTimeMS)))
+                if (ParamSML_cVoltageCyclic && (!_sentDataVoltageL3Time || delayCheck(_sentDataVoltageL3Time, (ParamSML_cVoltageCyclicTimeMS - CorrectionOfCycleTimeMS))))
                     send = true;
 
                 if (send)
@@ -672,7 +674,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
             if (ParamSML_cFrequencyChange && fabs(_sentDataFrequency - value) >= (double)ParamSML_cFrequencyChangeV / 10)
                 send = true;
 
-            if (ParamSML_cFrequencyCyclic && (!_sentDataFrequencyTime || delayCheck(_sentDataFrequencyTime, ParamSML_cFrequencyCyclicTimeMS)))
+            if (ParamSML_cFrequencyCyclic && (!_sentDataFrequencyTime || delayCheck(_sentDataFrequencyTime, (ParamSML_cFrequencyCyclicTimeMS - CorrectionOfCycleTimeMS))))
                 send = true;
 
             if (send)
