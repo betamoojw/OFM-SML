@@ -11,9 +11,13 @@ class SMLChannel : public OpenKNX::Channel
 {
 
   protected:
-    uint16_t _bufferSize = 0;
+    mutex_t _mutex;
+    uint16_t _bufferPos = 0;
     uint8_t _buffer[OPENKNX_SML_BUFFER] = {};
+    // uint8_t *_currentFile = nullptr;
+    // uint16_t _currentFileSize = 0;
     HardwareSerial *_serial = nullptr;
+    sml_buffer *_smlBuffer = NULL;
 
     int64_t _sentCounterIn = 0;
     int64_t _sentCounterInT1 = 0;
@@ -27,7 +31,7 @@ class SMLChannel : public OpenKNX::Channel
     uint32_t _sentCounterOutTime = 0;
     uint32_t _sentCounterOutT1Time = 0;
     uint32_t _sentCounterOutT2Time = 0;
-
+    bool _capture = false;
     double _sentDataPower = 0;
     double _sentDataPowerL1 = 0;
     double _sentDataPowerL2 = 0;
@@ -63,27 +67,28 @@ class SMLChannel : public OpenKNX::Channel
     // double _sentDataFrequency = 0;
 
     bool moveBuffer(uint16_t length);
-    int findSequence(const uint8_t *sequence, const size_t length);
-    void parseBuffer();
     uint16_t crc16(uint8_t &byte, uint16_t crc);
-    uint16_t removeEscaping(uint16_t length);
-    bool processFile(const uint8_t *message, const size_t length);
+    void removeEscaping();
+    void processFile();
+
 
     void processDataPoint(sml_list_entry *entry);
     void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, boolean value);
     void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, double value);
     void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, char *value, uint8_t len);
 
-
   public:
     SMLChannel(uint8_t index);
 
     void setSerial(HardwareSerial *serial);
     HardwareSerial *getSerial();
-    void setup() override;
-    void loop() override;
+    void setup(bool configured) override;
+    void loop(bool configured) override;
+#ifdef OPENKNX_DUALCORE
+    void setup1(bool configured) override;
+    void loop1(bool configured) override;
+#endif
     void processInputKo(GroupObject &ko) override;
     const std::string name() override;
     void writeBuffer(uint8_t byte);
-    void resetBuffer();
 };

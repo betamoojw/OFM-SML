@@ -60,19 +60,41 @@ const std::string SMLChannel::name()
     return "SML";
 }
 
-void SMLChannel::setup()
+void SMLChannel::setup(bool configured)
 {
+    mutex_init(&_mutex);
 }
 
-void SMLChannel::loop()
+void SMLChannel::loop(bool configured)
 {
     if (getSerial() == nullptr) return;
 
+#ifndef OPENKNX_DUALCORE
     while (getSerial()->available())
+    {
         writeBuffer(getSerial()->read());
+    }
+#endif
 
-    parseBuffer();
+    processFile();
 }
+
+#ifdef OPENKNX_DUALCORE
+void SMLChannel::setup1(bool configured)
+{
+}
+
+void SMLChannel::loop1(bool configured)
+{
+    if (getSerial() == nullptr) return;
+    if (!getSerial()->available()) return;
+
+    while (getSerial()->available())
+    {
+        writeBuffer(getSerial()->read());
+    }
+}
+#endif
 
 void SMLChannel::processInputKo(GroupObject &ko)
 {
@@ -82,152 +104,123 @@ void SMLChannel::writeBuffer(uint8_t byte)
 {
     openknxSMLModule.lastReceived = millis();
 
-    if (_bufferSize >= OPENKNX_SML_BUFFER) moveBuffer(1);
-
-    _buffer[_bufferSize] = byte;
-    _bufferSize++;
-}
-
-void SMLChannel::parseBuffer()
-{
-    for (size_t i = 0; i < 10; i++)
+    if (_bufferPos >= OPENKNX_SML_BUFFER)
     {
-        if (_bufferSize < 8) return; // Kann noch keine Startsequenz haben da wenier als 8 zeichen
-
-        int startPos = findSequence((const uint8_t *)&SML_START, 8);
-
-        if (startPos < 0) // keine Startsequenz gefunden
-        {
-            moveBuffer(_bufferSize - 7); // nehme die letzte 7 zeichen und verwerfe alles davor
-            return;
-        };
-
-        // sequenz weiter hinten gefunden daher schiebe an anfang
-        if (startPos > 0)
-        {
-            moveBuffer(startPos);
-        }
-
-        int endPos = findSequence((const uint8_t *)&SML_END, 5);
-
-        if (endPos < 0) break;
-        endPos += 8;
-
-        // found end but check if cheksum already founded
-        if (endPos > _bufferSize) break;
-
-        const uint8_t *checksum = _buffer + endPos - 2;
-        const uint16_t crc_received = (checksum[1] << 8) | checksum[0];
-        const uint8_t fillBytes = _buffer[endPos - 3];
-
-        // berechne crc
-        uint16_t crc = 0xFFFF; // reset
-        for (size_t i = 0; i < endPos - 2; i++)
-            crc = crc16(_buffer[i], crc);
-        crc ^= 0xFFFF;
-
-        if (crc == crc_received)
-        {
-            if (openknxSMLModule.debug())
-            {
-                logInfoP("Valid sml file found");
-                logIndentUp();
-                logInfoP("Data:");
-                logIndentUp();
-                logHexInfoP(_buffer, endPos);
-                logIndentDown();
-                logInfoP("Info:");
-                logIndentUp();
-            }
-
-            // bereit weiter verarbeitung vor.
-            moveBuffer(8); // Schmeiße den Anfang weg
-            endPos -= 8;
-
-            // entferne escaping ohne dabei das nachfolgende möglich telegram zu verschieben
-            const uint16_t len = removeEscaping(endPos) - fillBytes - 8 /* ENDSEQ */;
-
-            processFile(_buffer, len);
-
-            if (openknxSMLModule.debug())
-            {
-                logIndentDown();
-                logInfoP("");
-                logIndentDown();
-            }
-        }
-        else
-        {
-            logErrorP("Invalid sml file (checksum %04X != %04X)", crc, crc_received);
-            logHexErrorP(_buffer, endPos);
-        }
-        moveBuffer(endPos);
+        moveBuffer(1);
+        _capture = false;
     }
-}
 
-int SMLChannel::findSequence(const uint8_t *sequence, const size_t length)
-{
-    int range = _bufferSize - length;
-    if (range >= 0)
+    _buffer[_bufferPos] = byte;
+    _bufferPos++;
+
+    if (_capture)
     {
-        for (int i = 0; i <= range; i++)
+
+        // check if new start sequence found
+        if (_bufferPos >= 16 && memcmp(_buffer + _bufferPos - 8, SML_START, 8) == 0)
         {
-            if (i + length <= _bufferSize)
+            logErrorP("Start with newly found start sequence in running message");
+            moveBuffer(_bufferPos - 8);
+        }
+
+        if (_bufferPos > 8 + 5 && memcmp(_buffer + _bufferPos - 5 - 3, SML_END, 5) == 0)
+        {
+            _capture = false;
+
+            // read checksum and fillbyte
+            const uint8_t *checksum = _buffer + _bufferPos - 2;
+            const uint16_t crc_received = (checksum[1] << 8) | checksum[0];
+            const uint8_t fillBytes = _buffer[_bufferPos - 3];
+
+            // calc verify crc
+            uint16_t crc = 0xFFFF; // reset
+            for (size_t i = 0; i < _bufferPos - 2; i++)
+                crc = crc16(_buffer[i], crc);
+            crc ^= 0xFFFF;
+
+            if (crc == crc_received)
             {
-                if (memcmp(sequence, _buffer + i, length) == 0)
+                // preapre next step
+                moveBuffer(8);           // remove start sequence
+                _bufferPos -= 8;         // remove end sequence
+                _bufferPos -= fillBytes; // remove fill bytes
+                removeEscaping();        // remove escaping
+
+                // process
+                mutex_enter_blocking(&_mutex);
+                if (_smlBuffer != NULL)
                 {
-                    return i;
+                    free(_smlBuffer);
+                    _smlBuffer = NULL;
                 }
+                _smlBuffer = sml_buffer_init(_bufferPos);
+                memcpy(_smlBuffer->buffer, _buffer, _bufferPos);
+                mutex_exit(&_mutex);
+            }
+            else
+            {
+                logErrorP("Invalid sml file (checksum %04X != %04X)", crc, crc_received);
+                logIndentUp();
+                logHexErrorP(_buffer, _bufferPos);
+                logIndentDown();
+            }
+            moveBuffer(_bufferPos);
+        }
+    }
+    else
+    {
+        if (_bufferPos >= 8)
+        {
+            if (memcmp(_buffer, SML_START, 8) == 0)
+            {
+                // logInfoP("START");
+                _capture = true;
+            }
+            else
+            {
+                if (openknxSMLModule.debug())
+                {
+                    logErrorP("Unexpected chars");
+                }
+                moveBuffer(1);
             }
         }
     }
-
-    return -1;
-}
-
-void SMLChannel::resetBuffer()
-{
-    getSerial()->flush();
-    _bufferSize = 0;
 }
 
 bool SMLChannel::moveBuffer(uint16_t move)
 {
-    if (move > _bufferSize)
+    if (move > _bufferPos)
     {
-        logErrorP("moveBuffer ERROR %i / %i", move, _bufferSize);
+        logErrorP("moveBuffer ERROR %i / %i", move, _bufferPos);
         return false;
     }
-    if (_bufferSize - move > 0)
+    if (_bufferPos - move > 0)
     {
-        memmove(_buffer, _buffer + move, _bufferSize - move);
+        memmove(_buffer, _buffer + move, _bufferPos - move);
     }
-    _bufferSize -= move;
+    _bufferPos -= move;
 
     return true;
 }
 
-uint16_t SMLChannel::removeEscaping(uint16_t length)
+void SMLChannel::removeEscaping()
 {
-    uint8_t found = 0;
-    for (size_t i = 0; i < length; i++)
+    for (size_t i = 0; i < _bufferPos;)
     {
-        if (_buffer[i] == 0x1b)
-            found++;
-        else
-            found = 0;
+        if (i >= _bufferPos - 8) return;
 
-        // wenn 8x 0x1b gefunden wurde wurde eine escapesequenz escaped und muss nun entfernt werden
-        // es wird nur innerhalb des bereiches gemove nicht wie bei moveTo der komplette buffer
-        if (found == 8)
+        if (memcmp(_buffer + i, SML_ESCAPE, 8) == 0)
         {
-            found = 0;
-            memmove(_buffer + i + 1 - 4, _buffer + i + 1, length - i - 4);
-            length -= 4;
-            i -= 4;
+            memmove(_buffer + i + 4, _buffer + i + 8, _bufferPos - i - 8);
+            _bufferPos -= 4;
+            i += 4;
+        }
+        else
+        {
+            i++;
         }
     }
-    return length;
 }
 
 uint16_t SMLChannel::crc16(uint8_t &byte, uint16_t crc)
@@ -235,9 +228,49 @@ uint16_t SMLChannel::crc16(uint8_t &byte, uint16_t crc)
     return pgm_read_word_near(&SML_CRC_TABLE[(byte ^ crc) & 0xff]) ^ (crc >> 8 & 0xff);
 }
 
-bool SMLChannel::processFile(const uint8_t *message, const size_t length)
+void SMLChannel::processFile()
 {
-    sml_file *file = sml_file_parse((uint8_t *)message, length);
+    if (_smlBuffer == NULL) return;
+
+    if (!mutex_try_enter(&_mutex, NULL)) return;
+    sml_buffer *currentBuffer = _smlBuffer;
+    _smlBuffer = NULL;
+    mutex_exit(&_mutex);
+
+    if (openknxSMLModule.debug())
+    {
+        logInfoP("Valid sml file found (%i size)", currentBuffer->buffer_len);
+        logIndentUp();
+        logHexInfoP(currentBuffer->buffer, currentBuffer->buffer_len);
+    }
+
+    sml_file *file = (sml_file *)malloc(sizeof(sml_file));
+    *file = (sml_file){.messages = NULL, .messages_len = 0, .buf = NULL};
+    file->buf = currentBuffer;
+
+    // parsing all messages
+    sml_message *msg;
+    for (; currentBuffer->cursor < currentBuffer->buffer_len;)
+    {
+
+        if (sml_buf_get_current_byte(currentBuffer) == SML_MESSAGE_END)
+        {
+            // reading trailing zeroed bytes
+            sml_buf_update_bytes_read(currentBuffer, 1);
+            continue;
+        }
+
+        msg = sml_message_parse(currentBuffer);
+
+        if (sml_buf_has_errors(currentBuffer))
+        {
+            logErrorP("Could not read the whole file!");
+            break;
+        }
+
+        if (msg) sml_file_add_message(file, msg);
+    }
+
     for (int i = 0; i < file->messages_len; i++)
     {
         sml_message *message = file->messages[i];
@@ -252,7 +285,6 @@ bool SMLChannel::processFile(const uint8_t *message, const size_t length)
                 { // do not crash on null value
                     continue;
                 }
-
                 processDataPoint(entry);
             }
         }
@@ -262,7 +294,14 @@ bool SMLChannel::processFile(const uint8_t *message, const size_t length)
     sml_file_free(file);
     // logHexInfoP(_buffer, messageLen);
 
-    return true;
+    if (openknxSMLModule.debug())
+    {
+        logIndentDown();
+    }
+
+    // clearCurrentFile();
+
+    return;
 }
 
 void SMLChannel::processDataPoint(sml_list_entry *entry)

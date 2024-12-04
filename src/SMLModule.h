@@ -15,6 +15,10 @@ class SMLModule : public OpenKNX::Module
     uint32_t lastReceived = 0;
     void setup(bool configured) override;
     void loop(bool configured) override;
+#ifdef OPENKNX_DUALCORE
+    void setup1(bool configured) override;
+    void loop1(bool configured) override;
+#endif
     bool processCommand(const std::string command, bool diagnose) override;
     void processInputKo(GroupObject &ko) override;
     bool debug();
