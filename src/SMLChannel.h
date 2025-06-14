@@ -11,7 +11,9 @@ class SMLChannel : public OpenKNX::Channel
 {
 
   protected:
+#ifndef ARDUINO_ARCH_ESP32
     mutex_t _mutex;
+#endif
     uint16_t _bufferPos = 0;
     uint8_t _buffer[OPENKNX_SML_BUFFER] = {};
     // uint8_t *_currentFile = nullptr;
@@ -71,7 +73,6 @@ class SMLChannel : public OpenKNX::Channel
     void removeEscaping();
     void processFile();
 
-
     void processDataPoint(sml_list_entry *entry);
     void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, boolean value);
     void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, double value);
@@ -84,7 +85,7 @@ class SMLChannel : public OpenKNX::Channel
     HardwareSerial *getSerial();
     void setup(bool configured) override;
     void loop(bool configured) override;
-#ifdef OPENKNX_DUALCORE
+#if defined(OPENKNX_DUALCORE) && !defined(ARDUINO_ARCH_ESP32)
     void setup1(bool configured) override;
     void loop1(bool configured) override;
 #endif

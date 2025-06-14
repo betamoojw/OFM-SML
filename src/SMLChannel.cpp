@@ -62,14 +62,16 @@ const std::string SMLChannel::name()
 
 void SMLChannel::setup(bool configured)
 {
+#ifndef ARDUINO_ARCH_ESP32
     mutex_init(&_mutex);
+#endif
 }
 
 void SMLChannel::loop(bool configured)
 {
     if (getSerial() == nullptr) return;
 
-#ifndef OPENKNX_DUALCORE
+#if !defined(OPENKNX_DUALCORE) && !defined(ARDUINO_ARCH_ESP32)
     while (getSerial()->available())
     {
         writeBuffer(getSerial()->read());
@@ -79,7 +81,7 @@ void SMLChannel::loop(bool configured)
     processFile();
 }
 
-#ifdef OPENKNX_DUALCORE
+#if defined(OPENKNX_DUALCORE) && !defined(ARDUINO_ARCH_ESP32)
 void SMLChannel::setup1(bool configured)
 {
 }
@@ -147,7 +149,9 @@ void SMLChannel::writeBuffer(uint8_t byte)
                 removeEscaping();        // remove escaping
 
                 // process
+#ifndef ARDUINO_ARCH_ESP32
                 mutex_enter_blocking(&_mutex);
+#endif
                 if (_smlBuffer != NULL)
                 {
                     free(_smlBuffer);
@@ -155,7 +159,9 @@ void SMLChannel::writeBuffer(uint8_t byte)
                 }
                 _smlBuffer = sml_buffer_init(_bufferPos);
                 memcpy(_smlBuffer->buffer, _buffer, _bufferPos);
+#ifndef ARDUINO_ARCH_ESP32
                 mutex_exit(&_mutex);
+#endif
             }
             else
             {
@@ -232,10 +238,15 @@ void SMLChannel::processFile()
 {
     if (_smlBuffer == NULL) return;
 
+#ifndef ARDUINO_ARCH_ESP32
     if (!mutex_try_enter(&_mutex, NULL)) return;
+#endif
     sml_buffer *currentBuffer = _smlBuffer;
     _smlBuffer = NULL;
+
+#ifndef ARDUINO_ARCH_ESP32
     mutex_exit(&_mutex);
+#endif
 
     if (openknxSMLModule.debug())
     {
