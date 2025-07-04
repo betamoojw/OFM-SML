@@ -1,6 +1,6 @@
 {
   "name": "OFM-SML",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "dependencies": {
     "libsml": "https://github.com/volkszaehler/libsml#c166372"
   },
