@@ -65,6 +65,9 @@ void SMLChannel::setup(bool configured)
 #ifndef ARDUINO_ARCH_ESP32
     mutex_init(&_mutex);
 #endif
+
+    _led = openknx.ledFunctions.getActive(201 + _channelIndex);
+    openknxSMLModule.ledHelper(_led, false, _lastReceivedByte);
 }
 
 void SMLChannel::loop(bool configured)
@@ -79,6 +82,24 @@ void SMLChannel::loop(bool configured)
 #endif
 
     processFile();
+
+    loopLed();
+}
+
+void SMLChannel::loopLed()
+{
+    if (_led == nullptr) return;
+
+    if (!_lastReceivedStatus && _lastReceivedFile != 0 && !delayCheck(_lastReceivedFile, 5000))
+    {
+        _lastReceivedStatus = true;
+        openknxSMLModule.ledHelper(_led, true, _lastReceivedByte);
+    }
+    else if (_lastReceivedStatus && delayCheck(_lastReceivedFile, 5000))
+    {
+        _lastReceivedStatus = false;
+        openknxSMLModule.ledHelper(_led, true, _lastReceivedByte);
+    }
 }
 
 #if defined(OPENKNX_DUALCORE) && !defined(ARDUINO_ARCH_ESP32)
@@ -104,7 +125,8 @@ void SMLChannel::processInputKo(GroupObject &ko)
 
 void SMLChannel::writeBuffer(uint8_t byte)
 {
-    openknxSMLModule.lastReceived = millis();
+    _lastReceivedByte = millis();
+    openknxSMLModule._lastReceivedByte = millis();
 
     if (_bufferPos >= OPENKNX_SML_BUFFER)
     {
@@ -254,6 +276,9 @@ void SMLChannel::processFile()
         logIndentUp();
         logHexInfoP(currentBuffer->buffer, currentBuffer->buffer_len);
     }
+
+    _lastReceivedFile = millis();
+    openknxSMLModule._lastReceivedFile = millis();
 
     sml_file *file = (sml_file *)malloc(sizeof(sml_file));
     *file = (sml_file){.messages = NULL, .messages_len = 0, .buf = NULL};

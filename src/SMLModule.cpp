@@ -12,11 +12,15 @@ const std::string SMLModule::version()
 
 void SMLModule::setup(bool configured)
 {
+    _led = openknx.ledFunctions.getActive(200);
+
     for (uint8_t i = 0; i < SML_ChannelCount; i++)
     {
         _channels[i] = new SMLChannel(i);
         _channels[i]->setup(configured);
     }
+
+    ledHelper(_led, false, _lastReceivedByte);
 }
 
 void SMLModule::loop(bool configured)
@@ -26,6 +30,24 @@ void SMLModule::loop(bool configured)
         _channels[_currentChannel]->loop(configured);
 
     while (openknx.freeLoopIterate(SML_ChannelCount, _currentChannel, processed));
+
+    loopLed();
+}
+
+void SMLModule::loopLed()
+{
+    if (_led == nullptr) return;
+
+    if (!_lastReceivedStatus && _lastReceivedFile != 0 && !delayCheck(_lastReceivedFile, 5000))
+    {
+        _lastReceivedStatus = true;
+        ledHelper(_led, true, _lastReceivedByte);
+    }
+    else if (_lastReceivedStatus && delayCheck(_lastReceivedFile, 5000))
+    {
+        _lastReceivedStatus = false;
+        ledHelper(_led, false, _lastReceivedByte);
+    }
 }
 
 #ifdef OPENKNX_DUALCORE
@@ -73,6 +95,23 @@ bool SMLModule::processCommand(const std::string command, bool diagnose)
 bool SMLModule::debug()
 {
     return _debug;
+}
+
+void SMLModule::ledHelper(OpenKNX::Led::FunctionGroup *_led, bool status, uint32_t &activity)
+{
+    if (_led == nullptr) return;
+
+    if (status)
+    {
+        _led->setColor(OpenKNX::Led::Color::Green);
+        _led->activity(activity, true);
+    }
+    else
+    {
+        _led->setColor(OpenKNX::Led::Color::Red);
+        _led->activity(activity, true, OpenKNX::Led::Capability::COLOR);
+        _led->activity(activity, false, OpenKNX::Led::Capability::MONOCHROME);
+    }
 }
 
 SMLModule openknxSMLModule;

@@ -6,6 +6,13 @@
       <ApplicationPrograms>
         <ApplicationProgram>
           <Static>
+            <ParameterTypes>
+              <ParameterType Id="%AID%_PT-SLEDFunc" Name="SLEDFunc">
+                <TypeRestriction Base="Value" SizeInBit="16" UIHint="DropDown">
+                  <Enumeration Text="SML Kanalstatus %Z%" Value="2%CC%" Id="%ENID%" DisplayOrder="0"/>
+                </TypeRestriction>
+              </ParameterType>
+            </ParameterTypes>
             <Parameters>
               <Parameter Id="%AID%_P-%TT%%CC%000" Name="c%C%Name"         ParameterType="%AID%_PT-Text40Byte" Text="Beschreibung" Value="" />
               <Parameter Id="%AID%_P-%TT%%CC%001" Name="c%C%ShowCounter"  ParameterType="%AID%_PT-OnOffYesNo" Text="Zählerstände" Value="1" />

@@ -5,6 +5,7 @@
 
 class SMLModule : public OpenKNX::Module
 {
+    friend class SMLChannel;
 
   protected:
     SMLChannel *_channels[SML_ChannelCount];
@@ -12,9 +13,13 @@ class SMLModule : public OpenKNX::Module
     bool _debug = false;
 
   public:
-    uint32_t lastReceived = 0;
+    bool _lastReceivedStatus = false;
+    uint32_t _lastReceivedByte = 0;
+    uint32_t _lastReceivedFile = 0;
+    OpenKNX::Led::FunctionGroup *_led = nullptr;
     void setup(bool configured) override;
     void loop(bool configured) override;
+    void loopLed();
 #ifdef OPENKNX_DUALCORE
     void setup1(bool configured) override;
     void loop1(bool configured) override;
@@ -26,6 +31,8 @@ class SMLModule : public OpenKNX::Module
 
     const std::string name() override;
     const std::string version() override;
+
+    void ledHelper(OpenKNX::Led::FunctionGroup *_led, bool status, uint32_t &activity);
 
     HardwareSerial *serials[SML_ChannelCount];
 };

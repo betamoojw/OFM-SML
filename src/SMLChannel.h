@@ -60,6 +60,11 @@ class SMLChannel : public OpenKNX::Channel
     double _sentDataFrequency = 0;
     uint32_t _sentDataFrequencyTime = 0;
 
+    bool _lastReceivedStatus = false;
+    uint32_t _lastReceivedByte = 0;
+    uint32_t _lastReceivedFile = 0;
+    OpenKNX::Led::FunctionGroup *_led = nullptr;
+
     // double _sentDataCurrentL1 = 0;
     // double _sentDataCurrentL2 = 0;
     // double _sentDataCurrentL3 = 0;
@@ -85,6 +90,7 @@ class SMLChannel : public OpenKNX::Channel
     HardwareSerial *getSerial();
     void setup(bool configured) override;
     void loop(bool configured) override;
+    void loopLed();
 #if defined(OPENKNX_DUALCORE) && !defined(ARDUINO_ARCH_ESP32)
     void setup1(bool configured) override;
     void loop1(bool configured) override;
