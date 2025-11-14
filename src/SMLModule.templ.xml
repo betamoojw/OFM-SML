@@ -9,7 +9,7 @@
             <ParameterTypes>
               <ParameterType Id="%AID%_PT-SLEDFunc" Name="SLEDFunc">
                 <TypeRestriction Base="Value" SizeInBit="16" UIHint="DropDown">
-                  <Enumeration Text="SML Kanalstatus %Z%" Value="2%CC%" Id="%ENID%" DisplayOrder="0"/>
+                  <Enumeration Text="SML Kanalstatus %Z%" Value="2%CC%" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
             </ParameterTypes>

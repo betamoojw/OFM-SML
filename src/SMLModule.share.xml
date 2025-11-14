@@ -27,7 +27,7 @@
               </ParameterType>
               <ParameterType Id="%AID%_PT-SLEDFunc" Name="SLEDFunc">
                 <TypeRestriction Base="Value" SizeInBit="16" UIHint="DropDown">
-                  <Enumeration Text="SML Gesamtstatus" Value="200" Id="%ENID%" DisplayOrder="0"/>
+                  <Enumeration Text="SML Gesamtstatus" Value="200" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
             </ParameterTypes>
