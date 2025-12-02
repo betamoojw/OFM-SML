@@ -66,7 +66,7 @@ void SMLChannel::setup(bool configured)
     mutex_init(&_mutex);
 #endif
 
-    _led = openknx.ledFunctions.getActive(201 + _channelIndex);
+    _led = openknx.ledFunctions.get(201 + _channelIndex);
     openknxSMLModule.ledHelper(_led, false, _lastReceivedByte);
 }
 

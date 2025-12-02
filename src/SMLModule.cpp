@@ -12,7 +12,7 @@ const std::string SMLModule::version()
 
 void SMLModule::setup(bool configured)
 {
-    _led = openknx.ledFunctions.getActive(200);
+    _led = openknx.ledFunctions.get(200);
 
     for (uint8_t i = 0; i < SML_ChannelCount; i++)
     {
@@ -99,8 +99,6 @@ bool SMLModule::debug()
 
 void SMLModule::ledHelper(OpenKNX::Led::FunctionGroup *_led, bool status, uint32_t &activity)
 {
-    if (_led == nullptr) return;
-
     if (status)
     {
         _led->setColor(OpenKNX::Led::Color::Green);
