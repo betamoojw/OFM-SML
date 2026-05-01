@@ -101,12 +101,12 @@ void SMLModule::ledHelper(OpenKNX::Led::FunctionGroup *_led, bool status, uint32
 {
     if (status)
     {
-        _led->setColor(OpenKNX::Led::Color::Green);
+        _led->color(OpenKNX::Led::Color::Green);
         _led->activity(activity, true);
     }
     else
     {
-        _led->setColor(OpenKNX::Led::Color::Red);
+        _led->color(OpenKNX::Led::Color::Red);
         _led->activity(activity, true, OpenKNX::Led::Capability::COLOR);
         _led->activity(activity, false, OpenKNX::Led::Capability::MONOCHROME);
     }
