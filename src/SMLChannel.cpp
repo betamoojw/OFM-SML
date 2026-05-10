@@ -74,7 +74,7 @@ void SMLChannel::loop(bool configured)
 {
     if (getSerial() == nullptr) return;
 
-#if !defined(OPENKNX_DUALCORE) && !defined(ARDUINO_ARCH_ESP32)
+#if !defined(OPENKNX_DUALCORE)
     while (getSerial()->available())
     {
         writeBuffer(getSerial()->read());
@@ -102,7 +102,7 @@ void SMLChannel::loopLed()
     }
 }
 
-#if defined(OPENKNX_DUALCORE) && !defined(ARDUINO_ARCH_ESP32)
+#if defined(OPENKNX_DUALCORE)
 void SMLChannel::setup1(bool configured)
 {
 }
@@ -110,7 +110,6 @@ void SMLChannel::setup1(bool configured)
 void SMLChannel::loop1(bool configured)
 {
     if (getSerial() == nullptr) return;
-    if (!getSerial()->available()) return;
 
     while (getSerial()->available())
     {
