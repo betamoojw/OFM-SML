@@ -19,6 +19,7 @@ void SMLModule::setup(bool configured)
         _channels[i] = new SMLChannel(i);
         _channels[i]->setup(configured);
     }
+    logInfoP("Setup completed with %u channels", SML_ChannelCount);
 
     ledHelper(_led, false, _lastReceivedByte);
 }
@@ -27,8 +28,10 @@ void SMLModule::loop(bool configured)
 {
     uint8_t processed = 0;
     do
-        _channels[_currentChannel]->loop(configured);
-
+    {
+        if (_channels[_currentChannel] != nullptr)
+            _channels[_currentChannel]->loop(configured);
+    }
     while (openknx.freeLoopIterate(SML_ChannelCount, _currentChannel, processed));
 
     loopLed();
@@ -55,14 +58,16 @@ void SMLModule::setup1(bool configured)
 {
     for (uint8_t i = 0; i < SML_ChannelCount; i++)
     {
-        _channels[i]->setup1(configured);
+        if (_channels[i] != nullptr)
+            _channels[i]->setup1(configured);
     }
 }
 void SMLModule::loop1(bool configured)
 {
     for (uint8_t i = 0; i < SML_ChannelCount; i++)
     {
-        _channels[i]->loop1(configured);
+        if (_channels[i] != nullptr)
+            _channels[i]->loop1(configured);
     }
 }
 #endif

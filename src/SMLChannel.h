@@ -98,4 +98,5 @@ class SMLChannel : public OpenKNX::Channel
     void processInputKo(GroupObject &ko) override;
     const std::string name() override;
     void writeBuffer(uint8_t byte);
+    bool isActive();
 };

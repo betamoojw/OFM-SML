@@ -8,7 +8,7 @@ class SMLModule : public OpenKNX::Module
     friend class SMLChannel;
 
   protected:
-    SMLChannel *_channels[SML_ChannelCount];
+    SMLChannel *_channels[SML_ChannelCount] = {};
     uint8_t _currentChannel = 0;
     bool _debug = false;
 

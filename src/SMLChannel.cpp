@@ -60,6 +60,11 @@ const std::string SMLChannel::name()
     return "SML";
 }
 
+bool SMLChannel::isActive()
+{
+    return ParamSML_cType > 0;
+}
+
 void SMLChannel::setup(bool configured)
 {
 #ifndef ARDUINO_ARCH_ESP32
