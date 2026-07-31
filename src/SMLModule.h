@@ -15,11 +15,10 @@ class SMLModule : public OpenKNX::Module
   public:
     bool _lastReceivedStatus = false;
     uint32_t _lastReceivedByte = 0;
-    uint32_t _lastReceivedFile = 0;
     OpenKNX::Led::FunctionGroup *_led = nullptr;
     void setup(bool configured) override;
     void loop(bool configured) override;
-    void loopLed();
+    void loopStatus();
 #ifdef OPENKNX_DUALCORE
     void setup1(bool configured) override;
     void loop1(bool configured) override;

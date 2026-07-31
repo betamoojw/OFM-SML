@@ -34,23 +34,30 @@ void SMLModule::loop(bool configured)
     }
     while (openknx.freeLoopIterate(SML_ChannelCount, _currentChannel, processed));
 
-    loopLed();
+    loopStatus();
 }
 
-void SMLModule::loopLed()
+// Der Gesamtstatus wird aus den Kanälen abgeleitet: sobald einer empfängt, gilt das Modul
+// als aktiv. Die Zeitschwelle liegt damit ausschließlich im Kanal und muss hier nicht
+// zusätzlich gepflegt werden.
+void SMLModule::loopStatus()
 {
     if (_led == nullptr) return;
 
-    if (!_lastReceivedStatus && _lastReceivedFile != 0 && !delayCheck(_lastReceivedFile, 5000))
+    bool receiveStatus = false;
+    for (uint8_t i = 0; i < SML_ChannelCount; i++)
     {
-        _lastReceivedStatus = true;
-        ledHelper(_led, true, _lastReceivedByte);
+        if (_channels[i] != nullptr && _channels[i]->receiveStatus())
+        {
+            receiveStatus = true;
+            break;
+        }
     }
-    else if (_lastReceivedStatus && delayCheck(_lastReceivedFile, 5000))
-    {
-        _lastReceivedStatus = false;
-        ledHelper(_led, false, _lastReceivedByte);
-    }
+
+    if (receiveStatus == _lastReceivedStatus) return;
+
+    _lastReceivedStatus = receiveStatus;
+    ledHelper(_led, receiveStatus, _lastReceivedByte);
 }
 
 #ifdef OPENKNX_DUALCORE

@@ -110,7 +110,7 @@ class SMLChannel : public OpenKNX::Channel
 
     void beginCapture(uint16_t start);
     bool moveBuffer(uint16_t length);
-    uint16_t crc16(uint8_t &byte, uint16_t crc);
+    uint16_t crc16(uint8_t byte, uint16_t crc);
     void removeEscaping();
     void lockBuffer();
     bool tryLockBuffer();
@@ -138,5 +138,7 @@ class SMLChannel : public OpenKNX::Channel
     const std::string name() override;
     void writeBuffer(uint8_t byte);
     bool isActive();
+    // true, solange innerhalb von OPENKNX_SML_STALE_TIMEOUT ein Telegramm ankam
+    bool receiveStatus();
     const std::string diagnoseInfo();
 };

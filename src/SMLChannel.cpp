@@ -68,6 +68,11 @@ bool SMLChannel::isActive()
     return ParamSML_cType > 0 && !ParamSML_cSuspended;
 }
 
+bool SMLChannel::receiveStatus()
+{
+    return _lastReceivedStatus;
+}
+
 const std::string SMLChannel::diagnoseInfo()
 {
     if (!isActive())
@@ -356,7 +361,7 @@ void SMLChannel::removeEscaping()
     }
 }
 
-uint16_t SMLChannel::crc16(uint8_t &byte, uint16_t crc)
+uint16_t SMLChannel::crc16(uint8_t byte, uint16_t crc)
 {
     return pgm_read_word_near(&SML_CRC_TABLE[(byte ^ crc) & 0xff]) ^ (crc >> 8 & 0xff);
 }
@@ -411,7 +416,6 @@ void SMLChannel::processFile()
     }
 
     _lastReceivedFile = millis();
-    openknxSMLModule._lastReceivedFile = millis();
     _features = {};
 
     sml_file *file = (sml_file *)malloc(sizeof(sml_file));
@@ -952,9 +956,6 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
 
 void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, char *value, uint8_t len)
 {
-    char value2[len + 1] = "";
-    memcpy(&value2, value, len);
-
     if (c == 96 && d == 50 && e == 1) // Hersteller
     {
         if (len < 3)
@@ -995,6 +996,13 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
     }
     else
     {
-        if (openknxSMLModule.debug()) logInfoP("%s: %s", obis, value2);
+        if (openknxSMLModule.debug())
+        {
+            // value ist nicht nullterminiert, len passt als uint8_t immer in den Puffer.
+            // Die Nullung stellt sicher, dass %s auf jeden Fall terminiert liest.
+            char text[256] = {};
+            memcpy(text, value, len);
+            logInfoP("%s: %s", obis, text);
+        }
     }
 }
