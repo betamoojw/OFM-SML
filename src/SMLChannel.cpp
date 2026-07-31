@@ -35,9 +35,12 @@ const uint16_t SML_CRC_TABLE[256] PROGMEM =
      0xC514, 0xB1AB, 0xA022, 0x92B9, 0x8330, 0x7BC7, 0x6A4E, 0x58D5, 0x495C,
      0x3DE3, 0x2C6A, 0x1EF1, 0x0F78};
 
+// Die ersten vier Bytes sind die Escape-Marke, alle acht die maskierte 1B-Folge
 const uint8_t SML_ESCAPE[8] = {0x1B, 0x1B, 0x1B, 0x1B, 0x1B, 0x1B, 0x1B, 0x1B};
+// Marke plus Argumentgruppe; SML_START + 4 ist die Argumentgruppe für sich
 const uint8_t SML_START[8] = {0x1B, 0x1B, 0x1B, 0x1B, 0x01, 0x01, 0x01, 0x01};
-const uint8_t SML_END[5] = {0x1B, 0x1B, 0x1B, 0x1B, 0x1A};
+// erstes Byte der Argumentgruppe, die eine Marke als Rahmenende ausweist
+const uint8_t SML_ESCAPE_END = 0x1A;
 
 SMLChannel::SMLChannel(uint8_t index)
 {
@@ -91,8 +94,10 @@ const std::string SMLChannel::diagnoseInfo()
 
 void SMLChannel::setup(bool configured)
 {
-#ifndef ARDUINO_ARCH_ESP32
+#ifdef ARDUINO_ARCH_RP2040
     mutex_init(&_mutex);
+#elif defined(ARDUINO_ARCH_ESP32)
+    _mutex = xSemaphoreCreateMutex();
 #endif
 
     _led = openknx.ledFunctions.get(201 + _channelIndex);
@@ -154,9 +159,14 @@ void SMLChannel::writeBuffer(uint8_t byte)
     _lastReceivedByte = millis();
     openknxSMLModule._lastReceivedByte = millis();
 
+    // Kein Telegrammende innerhalb des Puffers gefunden, der Inhalt ist damit unbrauchbar
+    // und wird komplett verworfen. Anschließend wird wieder auf eine Startsequenz gewartet.
+    // Eine vollständige Startsequenz kann nicht verloren gehen, die hätte unten bereits
+    // resynchronisiert. Da die Telegramme im Sekundentakt kommen, kostet das höchstens eines.
     if (_bufferPos >= OPENKNX_SML_BUFFER)
     {
-        moveBuffer(1);
+        logErrorP("No end sequence within %u bytes, buffer dropped", _bufferPos);
+        _bufferPos = 0;
         _capture = false;
     }
 
@@ -165,15 +175,59 @@ void SMLChannel::writeBuffer(uint8_t byte)
 
     if (_capture)
     {
+        bool frameComplete = false;
 
-        // check if new start sequence found
-        if (_bufferPos >= 16 && memcmp(_buffer + _bufferPos - 8, SML_START, 8) == 0)
+        // Resync-Netz: ein neuer Rahmenanfang wird auch außerhalb des 4-Byte-Rasters
+        // erkannt. Sonst müsste nach verlorenen Bytes bis zum Pufferüberlauf gewartet
+        // werden, weil der Rest des Rahmens dann gegen das Raster verschoben ist.
+        // Die Argumentgruppe einer Escape-Marke ist ausgenommen, sonst würde eine
+        // maskierte 1B-Folge gefolgt von 01 01 01 01 als Rahmenanfang gelesen.
+        if (_bufferPos >= 16 && (uint16_t)(_bufferPos - 8) != _escapeArgPos &&
+            memcmp(_buffer + _bufferPos - 8, SML_START, 8) == 0)
         {
             logErrorP("Start with newly found start sequence in running message");
-            moveBuffer(_bufferPos - 8);
+            beginCapture(_bufferPos - 8);
+        }
+        // Das Transportformat ist durchgängig 4-Byte-ausgerichtet, dafür existieren die
+        // Füllbytes. Escape-Marken und ihre Argumente liegen daher immer auf dem Raster,
+        // und nur dort darf geprüft werden. Ein ungerasterter Vergleich würde die zweite
+        // Hälfte einer maskierten 1B-Folge für ein Rahmenende halten.
+        else if ((_bufferPos % 4) == 0)
+        {
+            const uint8_t *group = _buffer + _bufferPos - 4;
+
+            if (_escapePending)
+            {
+                _escapePending = false;
+
+                if (memcmp(group, SML_ESCAPE, 4) == 0)
+                {
+                    // maskierte 1B-Folge in den Nutzdaten, removeEscaping() löst sie später auf
+                    _escapeArgPos = _bufferPos - 4;
+                }
+                else if (memcmp(group, SML_START + 4, 4) == 0)
+                {
+                    logErrorP("Start with newly found start sequence in running message");
+                    beginCapture(_bufferPos - 8);
+                }
+                else if (group[0] == SML_ESCAPE_END)
+                {
+                    frameComplete = true;
+                }
+                else
+                {
+                    logErrorP("Invalid escape sequence, buffer dropped");
+                    _bufferPos = 0;
+                    _capture = false;
+                }
+            }
+            else if (memcmp(group, SML_ESCAPE, 4) == 0)
+            {
+                _escapePending = true;
+            }
         }
 
-        if (_bufferPos > 8 + 5 && memcmp(_buffer + _bufferPos - 5 - 3, SML_END, 5) == 0)
+        if (frameComplete)
         {
             _capture = false;
 
@@ -190,6 +244,16 @@ void SMLChannel::writeBuffer(uint8_t byte)
 
             if (crc == crc_received)
             {
+                // fillBytes stammt aus dem Telegramm (laut Spec 0..3) und wird gleich von
+                // _bufferPos abgezogen. Ohne Prüfung würde _bufferPos (uint16_t) unterlaufen
+                // und die Folgeschritte weit über _buffer hinaus lesen und schreiben.
+                if (fillBytes > 3 || _bufferPos <= 16 + fillBytes)
+                {
+                    logErrorP("Invalid sml file (length %u, fill bytes %u)", _bufferPos, fillBytes);
+                    moveBuffer(_bufferPos);
+                    return;
+                }
+
                 // preapre next step
                 moveBuffer(8);           // remove start sequence
                 _bufferPos -= 8;         // remove end sequence
@@ -197,12 +261,11 @@ void SMLChannel::writeBuffer(uint8_t byte)
                 removeEscaping();        // remove escaping
 
                 // process
-#ifndef ARDUINO_ARCH_ESP32
-                mutex_enter_blocking(&_mutex);
-#endif
+                lockBuffer();
                 if (_smlBuffer != NULL)
                 {
-                    free(_smlBuffer);
+                    // vorheriges, noch nicht verarbeitetes Telegramm verwerfen
+                    sml_buffer_free(_smlBuffer);
                     _smlBuffer = NULL;
                 }
                 _smlBuffer = sml_buffer_init(_bufferPos);
@@ -214,16 +277,14 @@ void SMLChannel::writeBuffer(uint8_t byte)
                 {
                     logErrorP("sml_buffer_init failed (out of memory)");
                 }
-#ifndef ARDUINO_ARCH_ESP32
-                mutex_exit(&_mutex);
-#endif
+                unlockBuffer();
             }
             else
             {
-                logErrorP("Invalid sml file (checksum %04X != %04X)", crc, crc_received);
-                logIndentUp();
-                logHexErrorP(_buffer, _bufferPos);
-                logIndentDown();
+                // Die Länge zeigt, ob das Telegramm verkürzt ankam. Ein Hexdump des Puffers
+                // dauert deutlich länger als der serielle Empfangspuffer überbrücken kann
+                // und würde damit das nächste Telegramm gleich mit beschädigen.
+                logErrorP("Invalid sml file dropped (checksum %04X != %04X, %u bytes)", crc, crc_received, _bufferPos);
             }
             moveBuffer(_bufferPos);
         }
@@ -235,7 +296,7 @@ void SMLChannel::writeBuffer(uint8_t byte)
             if (memcmp(_buffer, SML_START, 8) == 0)
             {
                 // logInfoP("START");
-                _capture = true;
+                beginCapture(0);
             }
             else
             {
@@ -247,6 +308,17 @@ void SMLChannel::writeBuffer(uint8_t byte)
             }
         }
     }
+}
+
+// Beginnt die Aufzeichnung mit der Startsequenz an Position 0. Damit liegt der Rahmen
+// wieder am Pufferanfang und das 4-Byte-Raster der Escape-Erkennung stimmt.
+void SMLChannel::beginCapture(uint16_t start)
+{
+    if (start > 0) moveBuffer(start);
+
+    _capture = true;
+    _escapePending = false;
+    _escapeArgPos = SML_NO_ESCAPE_ARG;
 }
 
 bool SMLChannel::moveBuffer(uint16_t move)
@@ -267,10 +339,10 @@ bool SMLChannel::moveBuffer(uint16_t move)
 
 void SMLChannel::removeEscaping()
 {
-    for (size_t i = 0; i < _bufferPos;)
+    // letzte gültige Vergleichsposition ist _bufferPos - 8, dort müssen noch 8 Byte passen.
+    // _bufferPos schrumpft bei jedem Treffer, die Bedingung wird daher je Runde neu geprüft.
+    for (size_t i = 0; i + 8 <= _bufferPos;)
     {
-        if (_bufferPos < 8 || i >= _bufferPos - 8) return;
-
         if (memcmp(_buffer + i, SML_ESCAPE, 8) == 0)
         {
             memmove(_buffer + i + 4, _buffer + i + 8, _bufferPos - i - 8);
@@ -289,19 +361,47 @@ uint16_t SMLChannel::crc16(uint8_t &byte, uint16_t crc)
     return pgm_read_word_near(&SML_CRC_TABLE[(byte ^ crc) & 0xff]) ^ (crc >> 8 & 0xff);
 }
 
+void SMLChannel::lockBuffer()
+{
+#ifdef ARDUINO_ARCH_RP2040
+    mutex_enter_blocking(&_mutex);
+#elif defined(ARDUINO_ARCH_ESP32)
+    xSemaphoreTake(_mutex, portMAX_DELAY);
+#endif
+}
+
+// Nicht blockierend: schlägt der Zugriff fehl, wird die Verarbeitung einfach
+// im nächsten Durchlauf erneut versucht.
+bool SMLChannel::tryLockBuffer()
+{
+#ifdef ARDUINO_ARCH_RP2040
+    return mutex_try_enter(&_mutex, NULL);
+#elif defined(ARDUINO_ARCH_ESP32)
+    return xSemaphoreTake(_mutex, 0) == pdTRUE;
+#else
+    return true;
+#endif
+}
+
+void SMLChannel::unlockBuffer()
+{
+#ifdef ARDUINO_ARCH_RP2040
+    mutex_exit(&_mutex);
+#elif defined(ARDUINO_ARCH_ESP32)
+    xSemaphoreGive(_mutex);
+#endif
+}
+
 void SMLChannel::processFile()
 {
     if (_smlBuffer == NULL) return;
 
-#ifndef ARDUINO_ARCH_ESP32
-    if (!mutex_try_enter(&_mutex, NULL)) return;
-#endif
+    if (!tryLockBuffer()) return;
+
     sml_buffer *currentBuffer = _smlBuffer;
     _smlBuffer = NULL;
 
-#ifndef ARDUINO_ARCH_ESP32
-    mutex_exit(&_mutex);
-#endif
+    unlockBuffer();
 
     if (openknxSMLModule.debug())
     {

@@ -2,21 +2,37 @@
 #include "OpenKNX.h"
 #include "sml/sml_list.h"
 #include "sml/sml_value.h"
+#ifdef ARDUINO_ARCH_RP2040
+    #include "pico/sync.h"
+#endif
+#ifdef ARDUINO_ARCH_ESP32
+    #include "freertos/semphr.h"
+#endif
 
+// Nimmt genau ein Telegramm zwischen Start- und Endsequenz auf. Übliche Zähler liegen
+// bei rund 370 Byte, ein Dreiphasenzähler mit allen Messwerten deutlich darüber. Läuft
+// der Puffer über, meldet der Kanal das als "No end sequence within ... bytes".
 #ifndef OPENKNX_SML_BUFFER
-    #define OPENKNX_SML_BUFFER 2048
+    #define OPENKNX_SML_BUFFER 1024
 #endif
 
 #ifndef OPENKNX_SML_STALE_TIMEOUT
     #define OPENKNX_SML_STALE_TIMEOUT 5000
 #endif
 
+// Platzhalter für "keine Escape-Argumentgruppe gesehen", liegt außerhalb jeder Position
+#define SML_NO_ESCAPE_ARG 0xFFFF
+
 class SMLChannel : public OpenKNX::Channel
 {
 
   protected:
-#ifndef ARDUINO_ARCH_ESP32
+    // Schützt die Übergabe von _smlBuffer zwischen writeBuffer() und processFile(),
+    // die im Dualcore-Betrieb auf unterschiedlichen Kernen laufen.
+#ifdef ARDUINO_ARCH_RP2040
     mutex_t _mutex;
+#elif defined(ARDUINO_ARCH_ESP32)
+    SemaphoreHandle_t _mutex = nullptr;
 #endif
     uint16_t _bufferPos = 0;
     uint8_t _buffer[OPENKNX_SML_BUFFER] = {};
@@ -38,6 +54,11 @@ class SMLChannel : public OpenKNX::Channel
     uint32_t _sentCounterOutT1Time = 0;
     uint32_t _sentCounterOutT2Time = 0;
     bool _capture = false;
+    // Escape-Zustand der Rahmenerkennung: _escapePending ist gesetzt, sobald eine
+    // Escape-Marke gelesen wurde und die nächste 4-Byte-Gruppe deren Argument ist.
+    // _escapeArgPos merkt sich die zuletzt als Argument verbrauchte Gruppe.
+    bool _escapePending = false;
+    uint16_t _escapeArgPos = SML_NO_ESCAPE_ARG;
     double _sentDataPower = 0;
     double _sentDataPowerL1 = 0;
     double _sentDataPowerL2 = 0;
@@ -87,9 +108,13 @@ class SMLChannel : public OpenKNX::Channel
     // double _sentDataVoltageL3 = 0;
     // double _sentDataFrequency = 0;
 
+    void beginCapture(uint16_t start);
     bool moveBuffer(uint16_t length);
     uint16_t crc16(uint8_t &byte, uint16_t crc);
     void removeEscaping();
+    void lockBuffer();
+    bool tryLockBuffer();
+    void unlockBuffer();
     void processFile();
 
     void processDataPoint(sml_list_entry *entry);
