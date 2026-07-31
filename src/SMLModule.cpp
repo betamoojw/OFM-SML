@@ -94,7 +94,25 @@ bool SMLModule::processCommand(const std::string command, bool diagnose)
 
         return true;
     }
+    else if (command.rfind("sml info") == 0 && command.length() == 10)
+    {
+        uint8_t channel = atoi(command.substr(8, 2).c_str());
+        if (channel >= 1 && channel <= SML_ChannelCount && _channels[channel - 1] != nullptr)
+        {
+            if (diagnose)
+                openknx.console.writeDiagnoseKo("%s", _channels[channel - 1]->diagnoseInfo().c_str());
+            else
+                logInfoP("%s", _channels[channel - 1]->diagnoseInfo().c_str());
+            return true;
+        }
+    }
     return false;
+}
+
+void SMLModule::showHelp()
+{
+    openknx.console.printHelpLine("sml debug", "Toggle SML debug logging");
+    openknx.console.printHelpLine("sml infoNN", "Show status of SML channel NN (e.g. sml info01)");
 }
 
 bool SMLModule::debug()

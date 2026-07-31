@@ -31,7 +31,7 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%130" Name="c%C%Current"          Offset="1" BitOffset="3" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%%CC%140" Name="c%C%Voltage"          Offset="1" BitOffset="4" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%%CC%150" Name="c%C%Frequency"        Offset="1" BitOffset="5" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%%CC%160" Name="c%C%Identifikation"   Offset="1" BitOffset="6" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%160" Name="c%C%Identifikation"   Offset="1" BitOffset="6" ParameterType="%AID%_PT-OnOffYesNo" Text="Identifikationsnummer" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%%CC%190" Name="c%C%CounterWh"        Offset="1" BitOffset="7" ParameterType="%AID%_PT-OnOffYesNo" Text="Aktiv" Value="0" />
               </Union>
 
@@ -43,6 +43,8 @@
                 <Parameter Id="%AID%_UP-%TT%%CC%131" Name="c%C%CurrentChange"        Offset="0" BitOffset="3"  ParameterType="%AID%_PT-OnOffYesNo" Text="Sende bei Änderung" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%%CC%141" Name="c%C%VoltageChange"        Offset="0" BitOffset="4"  ParameterType="%AID%_PT-OnOffYesNo" Text="Sende bei Änderung" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%%CC%151" Name="c%C%FrequencyChange"      Offset="0" BitOffset="5"  ParameterType="%AID%_PT-OnOffYesNo" Text="Sende bei Änderung" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%106" Name="c%C%Suspended"            Offset="0" BitOffset="6"  ParameterType="%AID%_PT-Suspended" Text="Suspendiert" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%%CC%107" Name="c%C%ShowMeterStatus"      Offset="0" BitOffset="7"  ParameterType="%AID%_PT-OnOffYesNo" Text="Statuswort" Value="0" />
               </Union>
 
               <Union SizeInBit="96">
@@ -101,7 +103,9 @@
               <ParameterRef Id="%AID%_UP-%TT%%CC%121_R-%TT%%CC%12101" RefId="%AID%_UP-%TT%%CC%121" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%131_R-%TT%%CC%13101" RefId="%AID%_UP-%TT%%CC%131" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%141_R-%TT%%CC%14101" RefId="%AID%_UP-%TT%%CC%141" />
-              <ParameterRef Id="%AID%_UP-%TT%%CC%151_R-%TT%%CC%15101" RefId="%AID%_UP-%TT%%CC%151" />              
+              <ParameterRef Id="%AID%_UP-%TT%%CC%151_R-%TT%%CC%15101" RefId="%AID%_UP-%TT%%CC%151" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%106_R-%TT%%CC%10601" RefId="%AID%_UP-%TT%%CC%106" />
+              <ParameterRef Id="%AID%_UP-%TT%%CC%107_R-%TT%%CC%10701" RefId="%AID%_UP-%TT%%CC%107" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%102_R-%TT%%CC%10201" RefId="%AID%_UP-%TT%%CC%102" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%112_R-%TT%%CC%11201" RefId="%AID%_UP-%TT%%CC%112" />
               <ParameterRef Id="%AID%_UP-%TT%%CC%122_R-%TT%%CC%12201" RefId="%AID%_UP-%TT%%CC%122" />
@@ -162,6 +166,7 @@
               <ComObject Id="%AID%_O-%TT%%CC%021" Name="c%C%CurrentL1"       Number="%K21%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-19" FunctionText="Smartmeter %Z%, OBIS 31.7.0"     Text="{{0:Smartmeter %Z%}}: Strom L1"/>
               <ComObject Id="%AID%_O-%TT%%CC%022" Name="c%C%CurrentL2"       Number="%K22%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-19" FunctionText="Smartmeter %Z%, OBIS 51.7.0"     Text="{{0:Smartmeter %Z%}}: Strom L2"/>
               <ComObject Id="%AID%_O-%TT%%CC%023" Name="c%C%CurrentL3"       Number="%K23%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-14-19" FunctionText="Smartmeter %Z%, OBIS 71.7.0"     Text="{{0:Smartmeter %Z%}}: Strom L3"/>
+              <ComObject Id="%AID%_O-%TT%%CC%024" Name="c%C%MeterStatus"    Number="%K24%" ObjectSize="4 Bytes"  ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled"  UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-12-1"  FunctionText="Smartmeter %Z%, Statuswort" Text="{{0:Smartmeter %Z%}}: Statuswort (Rohwert)"/>
             </ComObjectTable>
             <ComObjectRefs>
               <ComObjectRef Id="%AID%_O-%TT%%CC%000_R-%TT%%CC%00001" RefId="%AID%_O-%TT%%CC%000" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" />
@@ -188,6 +193,7 @@
               <ComObjectRef Id="%AID%_O-%TT%%CC%021_R-%TT%%CC%02101" RefId="%AID%_O-%TT%%CC%021" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <ComObjectRef Id="%AID%_O-%TT%%CC%022_R-%TT%%CC%02201" RefId="%AID%_O-%TT%%CC%022" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
               <ComObjectRef Id="%AID%_O-%TT%%CC%023_R-%TT%%CC%02301" RefId="%AID%_O-%TT%%CC%023" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
+              <ComObjectRef Id="%AID%_O-%TT%%CC%024_R-%TT%%CC%02401" RefId="%AID%_O-%TT%%CC%024" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001"/>
             </ComObjectRefs>
           </Static>
           <Dynamic>
@@ -210,27 +216,29 @@
               <ParameterBlock Id="%AID%_PB-nnn" Name="Channel">
                 <choose ParamRefId="%AID%_UP-%TT%%CC%010_R-%TT%%CC%01001">
                   <when test=">0">
-                    <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%Page" Text="Smartmeter %Z%: {{0: ...}}" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" Icon="meter-electric-outline" HelpContext="Empty" ShowInComObjectTree="true">
+                    <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%Page" Text="Smartmeter %Z%: {{0: ...}}" TextParameterRefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" Icon="meter-electric-outline" HelpContext="SML-Dokumentation" ShowInComObjectTree="true">
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="Kanaldefinition" UIHint="Headline" />
                       <!-- Beschreibung -->
                       <ParameterRefRef RefId="%AID%_P-%TT%%CC%000_R-%TT%%CC%00001" IndentLevel="1" HelpContext="BASE-ChannelName" />
                       <!-- Zählertyp (ohne Inaktiv), sync mit Typ in Kanalauswahl -->
                       <ParameterRefRef RefId="%AID%_P-%TT%%CC%011_R-%TT%%CC%01101" IndentLevel="1" HelpContext="%DOC%" />
+                      <!-- Suspendiert -->
+                      <ParameterRefRef RefId="%AID%_UP-%TT%%CC%106_R-%TT%%CC%10601" IndentLevel="1" HelpContext="BASE-ChannelSuspended" />
 
                       <ParameterSeparator Id="%AID%_PS-nnn" Text="Funktionen" UIHint="Headline" />
-                        <ParameterRefRef RefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" IndentLevel="1" HelpContext="%DOC%" />
-                        <ParameterRefRef RefId="%AID%_P-%TT%%CC%002_R-%TT%%CC%00201" IndentLevel="1" HelpContext="%DOC%" />
-                        <ParameterRefRef RefId="%AID%_P-%TT%%CC%003_R-%TT%%CC%00301" IndentLevel="1" HelpContext="%DOC%" />
+                        <ParameterRefRef RefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101" IndentLevel="1" HelpContext="SML-Zaehlerstaende" />
+                        <ParameterRefRef RefId="%AID%_P-%TT%%CC%002_R-%TT%%CC%00201" IndentLevel="1" HelpContext="SML-Messwerte" />
+                        <ParameterRefRef RefId="%AID%_P-%TT%%CC%003_R-%TT%%CC%00301" IndentLevel="1" HelpContext="SML-Erweitert" />
                         <choose ParamRefId="%AID%_P-%TT%%CC%001_R-%TT%%CC%00101">
-                        
+
                           <when test="1">
-                            <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%Counter" Text="Zählerstände" Icon="counter" HelpContext="Empty" ShowInComObjectTree="true">
+                            <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%Counter" Text="Zählerstände" Icon="counter" HelpContext="SML-Zaehlerstaende" ShowInComObjectTree="true">
 
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="Zählerstände (kWh)" UIHint="Headline" />
                               <ParameterRefRef RefId="%AID%_UP-%TT%%CC%100_R-%TT%%CC%10001" IndentLevel="1" HelpContext="Empty" />
                               <choose ParamRefId="%AID%_UP-%TT%%CC%100_R-%TT%%CC%10001">
                                 <when test="1">
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%101_R-%TT%%CC%10101" IndentLevel="1" HelpContext="Empty" />
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%101_R-%TT%%CC%10101" IndentLevel="1" HelpContext="SML-AenderungUndZyklus" />
                                   <choose ParamRefId="%AID%_UP-%TT%%CC%101_R-%TT%%CC%10101">
                                     <when test="1">
                                       <ParameterBlock Id="%AID%_PB-nnn" Name="PowerSumChange" Inline="true" Layout="Grid" HelpContext="Empty">
@@ -245,7 +253,7 @@
                                       </ParameterBlock>
                                     </when>
                                   </choose>
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%103_R-%TT%%CC%10301" IndentLevel="1" HelpContext="Empty" />
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%103_R-%TT%%CC%10301" IndentLevel="1" HelpContext="SML-AenderungUndZyklus" />
                                   <choose ParamRefId="%AID%_UP-%TT%%CC%103_R-%TT%%CC%10301">
                                     <when test="1">
                                       <ParameterBlock Id="%AID%_PB-nnn" Name="PowerSumCycle" Inline="true" Layout="Grid" HelpContext="Empty">
@@ -306,7 +314,7 @@
 
                         <choose ParamRefId="%AID%_P-%TT%%CC%002_R-%TT%%CC%00201">
                           <when test="1">
-                            <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%Power" Text="Messwerte" Icon="gauge" HelpContext="Empty" ShowInComObjectTree="true">
+                            <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%Power" Text="Messwerte" Icon="gauge" HelpContext="SML-Messwerte" ShowInComObjectTree="true">
                               <ParameterSeparator Id="%AID%_PS-nnn" Text="Für den Zugriff auf die Messwerte müssen diese einmalig mit einer PIN freigeschaltet werden. Welche Werte tatsächlich verfügbar sind, kann je nach Betreiber und Zähler variieren." UIHint="Information" />
                                                             
 
@@ -314,7 +322,7 @@
                               <ParameterRefRef RefId="%AID%_UP-%TT%%CC%110_R-%TT%%CC%11001" IndentLevel="1" HelpContext="Empty" />
                               <choose ParamRefId="%AID%_UP-%TT%%CC%110_R-%TT%%CC%11001">
                                 <when test="1">
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%111_R-%TT%%CC%11101" IndentLevel="1" HelpContext="Empty" />
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%111_R-%TT%%CC%11101" IndentLevel="1" HelpContext="SML-AenderungUndZyklus" />
                                   <choose ParamRefId="%AID%_UP-%TT%%CC%111_R-%TT%%CC%11101">
                                     <when test="1">
                                       <ParameterBlock Id="%AID%_PB-nnn" Name="PowerSumChange" Inline="true" Layout="Grid" HelpContext="Empty">
@@ -329,7 +337,7 @@
                                       </ParameterBlock>
                                     </when>
                                   </choose>
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%113_R-%TT%%CC%11301" IndentLevel="1" HelpContext="Empty" />
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%113_R-%TT%%CC%11301" IndentLevel="1" HelpContext="SML-AenderungUndZyklus" />
                                   <choose ParamRefId="%AID%_UP-%TT%%CC%113_R-%TT%%CC%11301">
                                     <when test="1">
                                       <ParameterBlock Id="%AID%_PB-nnn" Name="PowerSumCycle" Inline="true" Layout="Grid" HelpContext="Empty">
@@ -354,7 +362,7 @@
                               <ParameterRefRef RefId="%AID%_UP-%TT%%CC%120_R-%TT%%CC%12001" IndentLevel="1" HelpContext="Empty" />
                               <choose ParamRefId="%AID%_UP-%TT%%CC%120_R-%TT%%CC%12001">
                                 <when test="1">
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%121_R-%TT%%CC%12101" IndentLevel="1" HelpContext="Empty" />
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%121_R-%TT%%CC%12101" IndentLevel="1" HelpContext="SML-AenderungUndZyklus" />
                                   <choose ParamRefId="%AID%_UP-%TT%%CC%121_R-%TT%%CC%12101">
                                     <when test="1">
                                       <ParameterBlock Id="%AID%_PB-nnn" Name="PowerChange" Inline="true" Layout="Grid" HelpContext="Empty">
@@ -369,7 +377,7 @@
                                       </ParameterBlock>
                                     </when>
                                   </choose>
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%123_R-%TT%%CC%12301" IndentLevel="1" HelpContext="Empty" />
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%123_R-%TT%%CC%12301" IndentLevel="1" HelpContext="SML-AenderungUndZyklus" />
                                   <choose ParamRefId="%AID%_UP-%TT%%CC%123_R-%TT%%CC%12301">
                                     <when test="1">
                                       <ParameterBlock Id="%AID%_PB-nnn" Name="PowerCycle" Inline="true" Layout="Grid" HelpContext="Empty">
@@ -396,7 +404,7 @@
                               <ParameterRefRef RefId="%AID%_UP-%TT%%CC%130_R-%TT%%CC%13001" IndentLevel="1" HelpContext="Empty" />
                               <choose ParamRefId="%AID%_UP-%TT%%CC%130_R-%TT%%CC%13001">
                                 <when test="1">
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%131_R-%TT%%CC%13101" IndentLevel="1" HelpContext="Empty" />
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%131_R-%TT%%CC%13101" IndentLevel="1" HelpContext="SML-AenderungUndZyklus" />
                                   <choose ParamRefId="%AID%_UP-%TT%%CC%131_R-%TT%%CC%13101">
                                     <when test="1">
                                       <ParameterBlock Id="%AID%_PB-nnn" Name="CurrentChange" Inline="true" Layout="Grid" HelpContext="Empty">
@@ -411,7 +419,7 @@
                                       </ParameterBlock>
                                     </when>
                                   </choose>
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%133_R-%TT%%CC%13301" IndentLevel="1" HelpContext="Empty" />
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%133_R-%TT%%CC%13301" IndentLevel="1" HelpContext="SML-AenderungUndZyklus" />
                                   <choose ParamRefId="%AID%_UP-%TT%%CC%133_R-%TT%%CC%13301">
                                     <when test="1">
                                       <ParameterBlock Id="%AID%_PB-nnn" Name="CurrentCycle" Inline="true" Layout="Grid" HelpContext="Empty">
@@ -438,7 +446,7 @@
                               <ParameterRefRef RefId="%AID%_UP-%TT%%CC%140_R-%TT%%CC%14001" IndentLevel="1" HelpContext="Empty" />
                               <choose ParamRefId="%AID%_UP-%TT%%CC%140_R-%TT%%CC%14001">
                                 <when test="1">
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%141_R-%TT%%CC%14101" IndentLevel="1" HelpContext="Empty" />
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%141_R-%TT%%CC%14101" IndentLevel="1" HelpContext="SML-AenderungUndZyklus" />
                                   <choose ParamRefId="%AID%_UP-%TT%%CC%141_R-%TT%%CC%14101">
                                     <when test="1">
                                       <ParameterBlock Id="%AID%_PB-nnn" Name="CurrentChange" Inline="true" Layout="Grid" HelpContext="Empty">
@@ -453,7 +461,7 @@
                                       </ParameterBlock>
                                     </when>
                                   </choose>
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%143_R-%TT%%CC%14301" IndentLevel="1" HelpContext="Empty" />
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%143_R-%TT%%CC%14301" IndentLevel="1" HelpContext="SML-AenderungUndZyklus" />
                                   <choose ParamRefId="%AID%_UP-%TT%%CC%143_R-%TT%%CC%14301">
                                     <when test="1">
                                       <ParameterBlock Id="%AID%_PB-nnn" Name="CurrentCycle" Inline="true" Layout="Grid" HelpContext="Empty">
@@ -480,7 +488,7 @@
                               <ParameterRefRef RefId="%AID%_UP-%TT%%CC%150_R-%TT%%CC%15001" IndentLevel="1" HelpContext="Empty" />
                               <choose ParamRefId="%AID%_UP-%TT%%CC%150_R-%TT%%CC%15001">
                                 <when test="1">
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%151_R-%TT%%CC%15101" IndentLevel="1" HelpContext="Empty" />
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%151_R-%TT%%CC%15101" IndentLevel="1" HelpContext="SML-AenderungUndZyklus" />
                                   <choose ParamRefId="%AID%_UP-%TT%%CC%151_R-%TT%%CC%15101">
                                     <when test="1">
                                       <ParameterBlock Id="%AID%_PB-nnn" Name="CurrentChange" Inline="true" Layout="Grid" HelpContext="Empty">
@@ -495,7 +503,7 @@
                                       </ParameterBlock>
                                     </when>
                                   </choose>
-                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%153_R-%TT%%CC%15301" IndentLevel="1" HelpContext="Empty" />
+                                  <ParameterRefRef RefId="%AID%_UP-%TT%%CC%153_R-%TT%%CC%15301" IndentLevel="1" HelpContext="SML-AenderungUndZyklus" />
                                   <choose ParamRefId="%AID%_UP-%TT%%CC%153_R-%TT%%CC%15301">
                                     <when test="1">
                                       <ParameterBlock Id="%AID%_PB-nnn" Name="CurrentCycle" Inline="true" Layout="Grid" HelpContext="Empty">
@@ -521,12 +529,19 @@
 
                         <choose ParamRefId="%AID%_P-%TT%%CC%003_R-%TT%%CC%00301">
                           <when test="1">
-                            <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%More" Text="Erweitert" Icon="format-list-text" HelpContext="Empty" ShowInComObjectTree="true">
-                              <ParameterSeparator Id="%AID%_PS-nnn" Text="Identifikationsnummer" UIHint="Headline" />
-                              <ParameterRefRef RefId="%AID%_UP-%TT%%CC%160_R-%TT%%CC%16001" IndentLevel="1" HelpContext="Empty" />
+                            <ParameterBlock Id="%AID%_PB-nnn" Name="Channel%C%More" Text="Erweitert" Icon="format-list-text" HelpContext="SML-Erweitert" ShowInComObjectTree="true">
+                              <ParameterSeparator Id="%AID%_PS-nnn" Text="Erweitert" UIHint="Headline" />
+                              <ParameterRefRef RefId="%AID%_UP-%TT%%CC%160_R-%TT%%CC%16001" IndentLevel="1" HelpContext="SML-Identifikationsnummer" />
                               <choose ParamRefId="%AID%_UP-%TT%%CC%160_R-%TT%%CC%16001">
                                 <when test="1">
                                   <ComObjectRefRef RefId="%AID%_O-%TT%%CC%000_R-%TT%%CC%00001" />
+                                </when>
+                              </choose>
+
+                              <ParameterRefRef RefId="%AID%_UP-%TT%%CC%107_R-%TT%%CC%10701" IndentLevel="1" HelpContext="SML-Statuswort" />
+                              <choose ParamRefId="%AID%_UP-%TT%%CC%107_R-%TT%%CC%10701">
+                                <when test="1">
+                                  <ComObjectRefRef RefId="%AID%_O-%TT%%CC%024_R-%TT%%CC%02401" />
                                 </when>
                               </choose>
                             </ParameterBlock>

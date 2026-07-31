@@ -62,7 +62,31 @@ const std::string SMLChannel::name()
 
 bool SMLChannel::isActive()
 {
-    return ParamSML_cType > 0;
+    return ParamSML_cType > 0 && !ParamSML_cSuspended;
+}
+
+const std::string SMLChannel::diagnoseInfo()
+{
+    if (!isActive())
+        return "INACTIVE";
+
+    if (!_lastReceivedStatus)
+        return "NODATA";
+
+    char flags[5] = {};
+    uint8_t i = 0;
+    if (_features.power) flags[i++] = 'P';
+    if (_features.voltage) flags[i++] = 'V';
+    if (_features.current) flags[i++] = 'A';
+    if (_features.frequency) flags[i++] = 'F';
+
+    char buffer[14] = {};
+    if (i > 0)
+        snprintf(buffer, sizeof(buffer), "%sR T%u %s", _features.bidirectional ? "2" : "1", _features.maxTariff, flags);
+    else
+        snprintf(buffer, sizeof(buffer), "%sR T%u", _features.bidirectional ? "2" : "1", _features.maxTariff);
+
+    return std::string(buffer);
 }
 
 void SMLChannel::setup(bool configured)
@@ -88,22 +112,20 @@ void SMLChannel::loop(bool configured)
 
     processFile();
 
-    loopLed();
+    loopStatus();
 }
 
-void SMLChannel::loopLed()
+void SMLChannel::loopStatus()
 {
-    if (_led == nullptr) return;
-
-    if (!_lastReceivedStatus && _lastReceivedFile != 0 && !delayCheck(_lastReceivedFile, 5000))
+    if (!_lastReceivedStatus && _lastReceivedFile != 0 && !delayCheck(_lastReceivedFile, OPENKNX_SML_STALE_TIMEOUT))
     {
         _lastReceivedStatus = true;
-        openknxSMLModule.ledHelper(_led, true, _lastReceivedByte);
+        if (_led != nullptr) openknxSMLModule.ledHelper(_led, true, _lastReceivedByte);
     }
-    else if (_lastReceivedStatus && delayCheck(_lastReceivedFile, 5000))
+    else if (_lastReceivedStatus && delayCheck(_lastReceivedFile, OPENKNX_SML_STALE_TIMEOUT))
     {
         _lastReceivedStatus = false;
-        openknxSMLModule.ledHelper(_led, false, _lastReceivedByte);
+        if (_led != nullptr) openknxSMLModule.ledHelper(_led, false, _lastReceivedByte);
     }
 }
 
@@ -290,6 +312,7 @@ void SMLChannel::processFile()
 
     _lastReceivedFile = millis();
     openknxSMLModule._lastReceivedFile = millis();
+    _features = {};
 
     sml_file *file = (sml_file *)malloc(sizeof(sml_file));
     if (file == NULL)
@@ -359,6 +382,8 @@ void SMLChannel::processFile()
 
 void SMLChannel::processDataPoint(sml_list_entry *entry)
 {
+    if (!isActive()) return;
+
     if (!entry->obj_name || entry->obj_name->len < 6)
     {
         logErrorP("Invalid OBIS field (too short)");
@@ -374,6 +399,19 @@ void SMLChannel::processDataPoint(sml_list_entry *entry)
 
     char obis[10] = {};
     snprintf(obis, 9, "%02d.%02d.%02d", c, d, e);
+
+    if (entry->status && knx.configured() && openknx.afterStartupDelay() && ParamSML_cShowMeterStatus)
+    {
+        uint32_t rawStatus = 0;
+        switch (entry->status->type & SML_LENGTH_FIELD)
+        {
+            case 1: rawStatus = *entry->status->data.status8; break;
+            case 2: rawStatus = *entry->status->data.status16; break;
+            case 4: rawStatus = *entry->status->data.status32; break;
+            case 8: rawStatus = (uint32_t)*entry->status->data.status64; break;
+        }
+        KoSML_cMeterStatus.valueCompare(rawStatus, DPT_Value_4_Ucount);
+    }
 
     if (a != 1) return; // nur Stromzähler erlaubt
 
@@ -415,6 +453,9 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
         int64_t counterKwh = counter / 1000;
         int64_t counterWh = counter;
         if (openknxSMLModule.debug()) logInfoP("%s: %.3f kWh", obis, counter / 1000);
+
+        if (c == 1 && e > _features.maxTariff) _features.maxTariff = e;
+        else if (c == 2 && e == 0) _features.bidirectional = true;
 
         if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cType && ParamSML_cCounter)
         {
@@ -556,6 +597,8 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
     {
         if (openknxSMLModule.debug()) logInfoP("%s: %i Watt", obis, (int)value);
 
+        _features.power = true;
+
         if (knx.configured() && openknx.afterStartupDelay())
         {
             if (c == 16 && ParamSML_cPowerSum)
@@ -639,6 +682,9 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
     else if (d == 7 && (c == 31 || c == 51 || c == 71))
     {
         if (openknxSMLModule.debug()) logInfoP("%s: %.2f Ampere", obis, value);
+
+        _features.current = true;
+
         if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cCurrent)
         {
             if (c == 31)
@@ -703,6 +749,9 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
     else if (d == 7 && (c == 32 || c == 52 || c == 72))
     {
         if (openknxSMLModule.debug()) logInfoP("%s: %.1f Volt", obis, value);
+
+        _features.voltage = true;
+
         if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cVoltage)
         {
             if (c == 32)
@@ -767,6 +816,9 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
     else if (c == 14 && d == 7)
     {
         if (openknxSMLModule.debug()) logInfoP("%s: %.1f Herz", obis, value);
+
+        _features.frequency = true;
+
         if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cFrequency)
         {
             if (ParamSML_cFrequencyChange && fabs(_sentDataFrequency - value) >= (double)ParamSML_cFrequencyChangeV / 10)

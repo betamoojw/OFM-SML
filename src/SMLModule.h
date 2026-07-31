@@ -25,6 +25,7 @@ class SMLModule : public OpenKNX::Module
     void loop1(bool configured) override;
 #endif
     bool processCommand(const std::string command, bool diagnose) override;
+    void showHelp() override;
     void processInputKo(GroupObject &ko) override;
     bool debug();
     SMLChannel *getChannel(uint8_t index);

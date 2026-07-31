@@ -7,6 +7,10 @@
     #define OPENKNX_SML_BUFFER 2048
 #endif
 
+#ifndef OPENKNX_SML_STALE_TIMEOUT
+    #define OPENKNX_SML_STALE_TIMEOUT 5000
+#endif
+
 class SMLChannel : public OpenKNX::Channel
 {
 
@@ -65,6 +69,16 @@ class SMLChannel : public OpenKNX::Channel
     uint32_t _lastReceivedFile = 0;
     OpenKNX::Led::FunctionGroup *_led = nullptr;
 
+    struct
+    {
+        uint8_t maxTariff = 0; // 0-255, in der Praxis nur einstellig
+        bool bidirectional : 1; // Einspeisung (2.8.0) vorhanden
+        bool power : 1;
+        bool voltage : 1;
+        bool current : 1;
+        bool frequency : 1;
+    } _features = {};
+
     // double _sentDataCurrentL1 = 0;
     // double _sentDataCurrentL2 = 0;
     // double _sentDataCurrentL3 = 0;
@@ -90,7 +104,7 @@ class SMLChannel : public OpenKNX::Channel
     HardwareSerial *getSerial();
     void setup(bool configured) override;
     void loop(bool configured) override;
-    void loopLed();
+    void loopStatus();
 #if defined(OPENKNX_DUALCORE)
     void setup1(bool configured) override;
     void loop1(bool configured) override;
@@ -99,4 +113,5 @@ class SMLChannel : public OpenKNX::Channel
     const std::string name() override;
     void writeBuffer(uint8_t byte);
     bool isActive();
+    const std::string diagnoseInfo();
 };

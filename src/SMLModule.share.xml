@@ -49,10 +49,8 @@
                 <!-- Version -->
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Smartmeter (SML)" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Version: %ModuleVersion%" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="" UIHint="HorizontalRuler" />
-
               </ParameterBlock>
-              <ParameterBlock Id="%AID%_PB-nnn" Name="SMLKanalauswahl" Text="Kanalauswahl" Icon="format-list-bulleted-type" HelpContext="SML-Dokumentation">
+              <ParameterBlock Id="%AID%_PB-nnn" Name="SMLKanalauswahl" Text="Kanalauswahl" Icon="format-list-bulleted-type" HelpContext="BASE-ChannelSelect">
                 <ParameterBlock Id="%AID%_PB-nnn" Inline="true" Layout="Grid">
                   <Rows>
                     <Row Id="%AID%_PB-nnn_R-1" />
