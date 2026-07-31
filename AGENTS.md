@@ -4,6 +4,13 @@
 
 Dieses Modul liest SML-Telegramme (Smart Message Language) von deutschen Smartmetern über eine serielle Schnittstelle (z. B. eHZ-Infrarot-/KNX-Adapter) und sendet die Zählerstände, Momentanwerte und optional das Statuswort auf den KNX-Bus.
 
+## Basis: OGM-Common
+
+Dieses OFM baut auf `../OGM-Common/AGENTS.md` auf (Modulsystem, LED-/
+Flash-/Zeit-API, Logging, Embedded-Rahmenbedingungen, Code-Konventionen)
+— dort beschriebene Regeln und vorhandene Claude-Skills/Agents (z. B.
+das Kanalauswahl-Muster) gelten auch hier.
+
 ## Prefix und Namenskonventionen
 
 - **Modulprefix**: `SML`
@@ -55,3 +62,9 @@ Modul (`SML Gesamtstatus`, Funktions-ID 200) und jeder Kanal (`SML Kanalstatus X
 - Jede verwendete `HelpContext`-Id muss in der Applikationsbeschreibung als `<!-- DOC HelpContext="SML-..." -->` dokumentiert sein
 - Baggages werden über VS Code Task "OpenKNXproducer Documentation" erzeugt (`.vscode/tasks.json`)
 - Deutsche Texte mit echten Umlauten (ä, ö, ü, ß) schreiben
+
+## Referenzen
+
+- [README.md](README.md) — Funktionsüberblick, Status-LEDs, Diagnose, Konsolenbefehle
+- [doc/Applikationsbeschreibung-SML.md](doc/Applikationsbeschreibung-SML.md) — Statuswort-Details, Konfigtransfer-Beispiele
+- [CHANGELOG.md](CHANGELOG.md) — Versionshistorie
