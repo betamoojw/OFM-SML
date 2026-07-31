@@ -103,7 +103,7 @@ void SMLChannel::loopLed()
     else if (_lastReceivedStatus && delayCheck(_lastReceivedFile, 5000))
     {
         _lastReceivedStatus = false;
-        openknxSMLModule.ledHelper(_led, true, _lastReceivedByte);
+        openknxSMLModule.ledHelper(_led, false, _lastReceivedByte);
     }
 }
 
@@ -184,7 +184,14 @@ void SMLChannel::writeBuffer(uint8_t byte)
                     _smlBuffer = NULL;
                 }
                 _smlBuffer = sml_buffer_init(_bufferPos);
-                memcpy(_smlBuffer->buffer, _buffer, _bufferPos);
+                if (_smlBuffer != NULL)
+                {
+                    memcpy(_smlBuffer->buffer, _buffer, _bufferPos);
+                }
+                else
+                {
+                    logErrorP("sml_buffer_init failed (out of memory)");
+                }
 #ifndef ARDUINO_ARCH_ESP32
                 mutex_exit(&_mutex);
 #endif
@@ -240,7 +247,7 @@ void SMLChannel::removeEscaping()
 {
     for (size_t i = 0; i < _bufferPos;)
     {
-        if (i >= _bufferPos - 8) return;
+        if (_bufferPos < 8 || i >= _bufferPos - 8) return;
 
         if (memcmp(_buffer + i, SML_ESCAPE, 8) == 0)
         {
@@ -285,6 +292,12 @@ void SMLChannel::processFile()
     openknxSMLModule._lastReceivedFile = millis();
 
     sml_file *file = (sml_file *)malloc(sizeof(sml_file));
+    if (file == NULL)
+    {
+        logErrorP("malloc(sml_file) failed (out of memory)");
+        sml_buffer_free(currentBuffer);
+        return;
+    }
     *file = (sml_file){.messages = NULL, .messages_len = 0, .buf = NULL};
     file->buf = currentBuffer;
 
@@ -346,6 +359,12 @@ void SMLChannel::processFile()
 
 void SMLChannel::processDataPoint(sml_list_entry *entry)
 {
+    if (!entry->obj_name || entry->obj_name->len < 6)
+    {
+        logErrorP("Invalid OBIS field (too short)");
+        return;
+    }
+
     const uint8_t a = entry->obj_name->str[0];
     const uint8_t b = entry->obj_name->str[1];
     const uint8_t c = entry->obj_name->str[2];
@@ -401,7 +420,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
         {
             if (c == 1 && e == 0)
             {
-                if (ParamSML_cCounterChange && abs(_sentCounterIn - counterKwh) >= ParamSML_cCounterChangeV)
+                if (ParamSML_cCounterChange && llabs(_sentCounterIn - counterKwh) >= ParamSML_cCounterChangeV)
                     send = true;
 
                 if (ParamSML_cCounterCyclic && (!_sentCounterInTime || delayCheck(_sentCounterInTime, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
@@ -423,7 +442,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
             }
             else if (c == 1 && e == 1 && (ParamSML_cType == 2 || ParamSML_cType == 4))
             {
-                if (ParamSML_cCounterChange && abs(_sentCounterInT1 - counterKwh) >= ParamSML_cCounterChangeV)
+                if (ParamSML_cCounterChange && llabs(_sentCounterInT1 - counterKwh) >= ParamSML_cCounterChangeV)
                     send = true;
 
                 if (ParamSML_cCounterCyclic && (!_sentCounterInT1Time || delayCheck(_sentCounterInT1Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
@@ -445,7 +464,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
             }
             else if (c == 1 && e == 2 && (ParamSML_cType == 2 || ParamSML_cType == 4))
             {
-                if (ParamSML_cCounterChange && abs(_sentCounterInT2 - counterKwh) >= ParamSML_cCounterChangeV)
+                if (ParamSML_cCounterChange && llabs(_sentCounterInT2 - counterKwh) >= ParamSML_cCounterChangeV)
                     send = true;
 
                 if (ParamSML_cCounterCyclic && (!_sentCounterInT2Time || delayCheck(_sentCounterInT2Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
@@ -467,7 +486,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
             }
             else if (c == 2 && e == 0 && (ParamSML_cType == 3 || ParamSML_cType == 4))
             {
-                if (ParamSML_cCounterChange && abs(_sentCounterOut - counterKwh) >= ParamSML_cCounterChangeV)
+                if (ParamSML_cCounterChange && llabs(_sentCounterOut - counterKwh) >= ParamSML_cCounterChangeV)
                     send = true;
 
                 if (ParamSML_cCounterCyclic && (!_sentCounterOutTime || delayCheck(_sentCounterOutTime, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
@@ -489,7 +508,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
             }
             else if (c == 2 && e == 1 && ParamSML_cType == 4)
             {
-                if (ParamSML_cCounterChange && abs(_sentCounterOutT1 - counterKwh) >= ParamSML_cCounterChangeV)
+                if (ParamSML_cCounterChange && llabs(_sentCounterOutT1 - counterKwh) >= ParamSML_cCounterChangeV)
                     send = true;
 
                 if (ParamSML_cCounterCyclic && (!_sentCounterOutT1Time || delayCheck(_sentCounterOutT1Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
@@ -511,7 +530,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
             }
             else if (c == 2 && e == 2 && ParamSML_cType == 4)
             {
-                if (ParamSML_cCounterChange && abs(_sentCounterOutT2 - counterKwh) >= ParamSML_cCounterChangeV)
+                if (ParamSML_cCounterChange && llabs(_sentCounterOutT2 - counterKwh) >= ParamSML_cCounterChangeV)
                     send = true;
 
                 if (ParamSML_cCounterCyclic && (!_sentCounterOutT2Time || delayCheck(_sentCounterOutT2Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
@@ -786,6 +805,12 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
 
     if (c == 96 && d == 50 && e == 1) // Hersteller
     {
+        if (len < 3)
+        {
+            logErrorP("Invalid vendor field (len %u < 3)", len);
+            return;
+        }
+
         char vendor[4];
         sprintf(vendor, "%c%c%c", value[0], value[1], value[2]);
 
@@ -793,12 +818,18 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
     }
     else if (c == 96 && d == 1 && e == 0) // Zähler ID
     {
+        if (len < 10)
+        {
+            logErrorP("Invalid meter id field (len %u < 10)", len);
+            return;
+        }
+
         char identifier[15] = {};
         sprintf(identifier, "%i%c%c%c%02u%08u",
                 value[1],                                                    // Sparte
                 value[2], value[3], value[4],                                // Hersteller
                 value[5],                                                    // Fabrikationsblock
-                value[6] << 24 | value[7] << 16 | value[8] << 8 | value[9]); // Frabrikationsnummer
+                (uint8_t)value[6] << 24 | (uint8_t)value[7] << 16 | (uint8_t)value[8] << 8 | (uint8_t)value[9]); // Frabrikationsnummer
 
         if (openknxSMLModule.debug()) logInfoP("%s: %s", obis, identifier);
 
@@ -812,6 +843,6 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
     }
     else
     {
-        if (openknxSMLModule.debug()) logInfoP("%s: %X", obis, value2);
+        if (openknxSMLModule.debug()) logInfoP("%s: %s", obis, value2);
     }
 }

@@ -2,7 +2,7 @@
   "name": "OFM-SML",
   "version": "0.2.0",
   "dependencies": {
-    "libsml": "https://github.com/volkszaehler/libsml#v1.1.4"
+    "libsml": "https://github.com/volkszaehler/libsml#v1.1.5"
   },
   "description": "Enables the reading from meters operated in germany via sml interface.",
   "homepage": "https://openknx.de",

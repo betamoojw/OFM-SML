@@ -91,7 +91,7 @@ class SMLChannel : public OpenKNX::Channel
     void setup(bool configured) override;
     void loop(bool configured) override;
     void loopLed();
-#if defined(OPENKNX_DUALCORE) && !defined(ARDUINO_ARCH_ESP32)
+#if defined(OPENKNX_DUALCORE)
     void setup1(bool configured) override;
     void loop1(bool configured) override;
 #endif
