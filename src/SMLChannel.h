@@ -90,6 +90,11 @@ class SMLChannel : public OpenKNX::Channel
     uint32_t _lastReceivedFile = 0;
     OpenKNX::Led::FunctionGroup *_led = nullptr;
 
+    // Innerhalb eines Telegramms gewinnt der erste OBIS-Eintrag mit Statusfeld, weitere
+    // werden für das KO ignoriert (der SML-Spec zufolge kann grundsätzlich jeder Eintrag
+    // ein eigenes, potenziell unterschiedliches Statusfeld tragen).
+    bool _statusSentThisFile = false;
+
     struct
     {
         uint8_t maxTariff = 0; // 0-255, in der Praxis nur einstellig
@@ -118,8 +123,8 @@ class SMLChannel : public OpenKNX::Channel
     void processFile();
 
     void processDataPoint(sml_list_entry *entry);
-    void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, boolean value);
-    void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, double value);
+    void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, boolean value, const char *statusSuffix);
+    void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, double value, const char *statusSuffix);
     void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, char *value, uint8_t len);
 
   public:

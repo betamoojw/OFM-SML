@@ -49,7 +49,9 @@ Freitext zur Bezeichnung des Smartmeters, z. B. "Hauptzähler" oder "PV-Erzeugun
 <!-- DOC -->
 ## **Zählerstände**
 
-Hier werden die Zählerstände (Wirkarbeit) konfiguriert und über KNX bereitgestellt. Je nach oben gewähltem Zählertyp stehen die Zählerstände für den Bezug (OBIS 1.8.0), bei Zweitarifzählern zusätzlich getrennt nach Hoch- und Niedertarif (1.8.1/1.8.2), und bei Zweirichtungszählern zusätzlich für die Einspeisung (2.8.0, ggf. 2.8.1/2.8.2) zur Verfügung. Für jeden Zählerstand kann getrennt festgelegt werden, bei welcher Änderung und/oder in welchem festen Zyklus der aktuelle Wert gesendet wird. Zusätzlich lässt sich pro Zählerstand eine Wh-genaue Variante aktivieren, die primär zur Weiterverarbeitung mit dem Logikmodul oder dem virtuellen Zähler gedacht ist und nicht zur Übertragung per Gruppenadresse.
+Hier werden die Zählerstände (Wirkarbeit) konfiguriert und über KNX bereitgestellt. Je nach oben gewähltem Zählertyp stehen die Zählerstände für den Bezug (OBIS 1.8.0), bei Zweitarifzählern zusätzlich getrennt nach Hoch- und Niedertarif (1.8.1/1.8.2), und bei Zweirichtungszählern zusätzlich für die Einspeisung (2.8.0, ggf. 2.8.1/2.8.2) zur Verfügung. Für jeden Zählerstand kann getrennt festgelegt werden, bei welcher Änderung und/oder in welchem festen Zyklus der aktuelle Wert gesendet wird.
+
+Zusätzlich lässt sich pro Zählerstand eine Wh-genaue Variante aktivieren, die primär zur Weiterverarbeitung mit dem Logikmodul oder dem virtuellen Zähler gedacht ist und nicht zur Übertragung per Gruppenadresse. Deshalb ist das Ü-Flag bei diesen Kommunikationsobjekten standardmäßig deaktiviert; willst du den Wh-Wert doch per Gruppenadresse senden, musst du es manuell wieder aktivieren.
 
 <!-- DOC HelpContext="AenderungUndZyklus" -->
 ### **Änderung und Zyklus**
@@ -76,13 +78,23 @@ Aktiviert die Identifikationsnummer des Zählers (Hersteller, Sparte und Serienn
 <!-- DOC HelpContext="Statuswort" -->
 ### **Statuswort**
 
-Aktiviert das vom Zähler gemeldete Statuswort. Es handelt sich um ein optionales Feld der SML-Übertragung, das nicht jeder Zähler und nicht jedes Telegramm mitliefert — wird nichts gesendet, bleibt das Kommunikationsobjekt einfach auf seinem letzten Stand bzw. auf 0 stehen.
+Aktiviert das vom Zähler gemeldete Statuswort. Das Feld ist allerdings optional. Außerdem sind die Bits nicht sauber spezifiziert. Ich habe aber zwei Tabellen für 16 und 32 Bit gefunden. Daher wird der Wert einfach roh ausgegeben, und man kann die Auswertung z.B. mit dem Logikmodul machen.
 
-Das Statuswort wird unverändert als 32-Bit-Rohwert übertragen, ohne dass die einzelnen Bits ausgewertet oder interpretiert werden. Je nach Zähler ist das vom Gerät gemeldete Statuswort entweder 16 oder 32 Bit breit; im 16-Bit-Fall wird der Wert unverändert in die unteren 16 Bit des Kommunikationsobjekts eingetragen, die oberen 16 Bit bleiben dabei 0.
+Zähler mit nur 16 Bit landen in den unteren 16 Bit des Kommunikationsobjekts, der Rest bleibt 0. Gesendet wird nur bei einer Änderung des Wertes.
 
-Gesendet wird nur bei einer Änderung des Wertes (sowie einmalig nach dem Start, sobald der erste Wert vom Zähler empfangen wurde) — es gibt keine feste Zykluszeit oder Änderungsschwelle wie bei den Zählerständen und Messwerten. Liefert der Zähler dauerhaft denselben Wert, bleibt das Kommunikationsobjekt entsprechend stumm.
+Das Ü-Flag ist deshalb standardmäßig deaktiviert: einzelne Bits (z.B. die Leerlauf-/Anlauferkennung) können sich je nach Last auch mal sekündlich ändern, und das willst du dir nicht auf den Bus holen. Werte das Statuswort daher am besten geräteintern mit dem Logikmodul aus. Willst du den Rohwert trotzdem wirklich per Gruppenadresse verschicken, musst du das Ü-Flag am Kommunikationsobjekt manuell wieder aktivieren.
 
-Eine herstellerübergreifend verbindliche Bit-Belegung gibt es nicht, jeder Hersteller kann sie abweichend festlegen. Die folgende Zuordnung ist nicht gesichert (ungeprüfte Sekundärinformation, keine Garantie auf Vollständigkeit oder Einhaltung durch den jeweiligen Zähler), wird hier aber als möglicher Anhaltspunkt aufgeführt:
+Anbei gibt es neben der Bit-Tabelle noch zwei Beispiele, die du mit dem Konfigtransfer einlesen kannst. Beide gehen vom 32-Bit-Status aus, weil die meisten Zähler den nutzen.
+
+**Beispiel 1: Fehlerauswertung** — wertet die Bits 9, 10 und 17 aus und macht daraus ein Fehler-KO.
+
+OpenKNX,cv1,0xAF05:0xA3/LOG:0x44/10§f~Name=Z%C3%A4hlerstatus%20(Fehler)§f~LogicType=2§f~Logic=2§f~NameInput1=Stromz%C3%A4hler%20Statusmeldung§f~E1ConvertFloat=7§f~E1=1§f~E1Dpt=13§f~E1OtherKO:2=524§f~E1UseOtherKO=1§f~NameInput2=Konstante%3A%20Bits%209%2C10%2C17§f~E2ConvertFloat=5§f~E2=1§f~E2Dpt=13§f~E2LowDpt12Fix=132608§f~NameOutput=Ausgewerteter%20Fehlerstatus§f~OSendOnChange=1§f~OOnAll=8§f~OOnFunction=9§f~OOffAll=0§;OpenKNX
+
+**Beispiel 2: Energieflussrichtung gesamt** — wertet Bit 11 aus und macht daraus ein KO für die Energierichtung (Bezug/Einspeisung).
+
+OpenKNX,cv1,0xAF05:0xA3/LOG:0x44/1§f~Name=Energierichtung%20gesamt§f~LogicType=2§f~Logic=2§f~NameInput1=Stromz%C3%A4hler%20Statusmeldung§f~E1ConvertFloat=7§f~E1=1§f~E1Dpt=13§f~E1OtherKO:2=524§f~E1UseOtherKO=1§f~NameInput2=Konstante%3A%20Bit%2011§f~E2ConvertFloat=5§f~E2=1§f~E2Dpt=13§f~E2LowDpt12Fix=2048§f~NameOutput=Ausgewertete%20Energierichtung§f~OSendOnChange=1§f~OOnAll=8§f~OOnFunction=9§f~OOffAll=0§;OpenKNX
+
+*Bit-Tabellen*
 
 - **16-Bit-Wort:**
   - Bit 0: Fehler
@@ -110,6 +122,6 @@ Eine herstellerübergreifend verbindliche Bit-Belegung gibt es nicht, jeder Hers
   - Bit 18–20: Leiterspannung L1/L2/L3 vorhanden
   - Bit 21–31: reserviert, immer 0
 
-Da Bit 2 beim 16-Bit-Wort reserviert (immer 0) und beim 32-Bit-Wort immer 1 ist, lässt sich anhand dieses Bits im empfangenen Rohwert erkennen, welches der beiden Formate der Zähler tatsächlich verwendet.
+Praktisch ist Bit 2: beim 16-Bit-Wort ist das immer 0, beim 32-Bit-Wort immer 1. Damit siehst du am Rohwert direkt, welches der beiden Formate dein Zähler tatsächlich nutzt.
 
 

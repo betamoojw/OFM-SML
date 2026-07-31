@@ -190,7 +190,7 @@ void SMLChannel::writeBuffer(uint8_t byte)
         if (_bufferPos >= 16 && (uint16_t)(_bufferPos - 8) != _escapeArgPos &&
             memcmp(_buffer + _bufferPos - 8, SML_START, 8) == 0)
         {
-            logErrorP("Start with newly found start sequence in running message");
+            if (openknxSMLModule.debug()) logWarningP("Start with newly found start sequence in running message");
             beginCapture(_bufferPos - 8);
         }
         // Das Transportformat ist durchgängig 4-Byte-ausgerichtet, dafür existieren die
@@ -212,7 +212,7 @@ void SMLChannel::writeBuffer(uint8_t byte)
                 }
                 else if (memcmp(group, SML_START + 4, 4) == 0)
                 {
-                    logErrorP("Start with newly found start sequence in running message");
+                    if (openknxSMLModule.debug()) logWarningP("Start with newly found start sequence in running message");
                     beginCapture(_bufferPos - 8);
                 }
                 else if (group[0] == SML_ESCAPE_END)
@@ -412,11 +412,12 @@ void SMLChannel::processFile()
     {
         logInfoP("Valid sml file found (%i size)", currentBuffer->buffer_len);
         logIndentUp();
-        logHexInfoP(currentBuffer->buffer, currentBuffer->buffer_len);
+        logHexDebugP(currentBuffer->buffer, currentBuffer->buffer_len);
     }
 
     _lastReceivedFile = millis();
     _features = {};
+    _statusSentThisFile = false;
 
     sml_file *file = (sml_file *)malloc(sizeof(sml_file));
     if (file == NULL)
@@ -504,7 +505,9 @@ void SMLChannel::processDataPoint(sml_list_entry *entry)
     char obis[10] = {};
     snprintf(obis, 9, "%02d.%02d.%02d", c, d, e);
 
-    if (entry->status && knx.configured() && openknx.afterStartupDelay() && ParamSML_cShowMeterStatus)
+    // " (Status: 0x" (12) + 8 Hexstellen + ")" + NUL = 22, etwas Reserve
+    char statusSuffix[24] = "";
+    if (entry->status)
     {
         uint32_t rawStatus = 0;
         switch (entry->status->type & SML_LENGTH_FIELD)
@@ -514,7 +517,15 @@ void SMLChannel::processDataPoint(sml_list_entry *entry)
             case 4: rawStatus = *entry->status->data.status32; break;
             case 8: rawStatus = (uint32_t)*entry->status->data.status64; break;
         }
-        KoSML_cMeterStatus.valueCompare(rawStatus, DPT_Value_4_Ucount);
+
+        if (openknxSMLModule.debug()) snprintf(statusSuffix, sizeof(statusSuffix), " (Status: 0x%X)", rawStatus);
+
+        // Pro Telegramm gewinnt der erste Eintrag mit Statusfeld, weitere werden fürs KO ignoriert.
+        if (!_statusSentThisFile && knx.configured() && openknx.afterStartupDelay() && ParamSML_cShowMeterStatus)
+        {
+            KoSML_cMeterStatus.valueCompare(rawStatus, DPT_Value_4_Ucount);
+            _statusSentThisFile = true;
+        }
     }
 
     if (a != 1) return; // nur Stromzähler erlaubt
@@ -530,7 +541,7 @@ void SMLChannel::processDataPoint(sml_list_entry *entry)
         if (prec < 0) prec = 0;
         converted = converted * pow(10, scaler);
 
-        processDataPoint(obis, a, b, c, d, e, f, (double)converted);
+        processDataPoint(obis, a, b, c, d, e, f, (double)converted, statusSuffix);
     }
     else if (entry->value->type == SML_TYPE_OCTET_STRING)
     {
@@ -538,17 +549,17 @@ void SMLChannel::processDataPoint(sml_list_entry *entry)
     }
     else if (entry->value->type == SML_TYPE_BOOLEAN)
     {
-        processDataPoint(obis, a, b, c, d, e, f, (bool)entry->value->data.boolean);
+        processDataPoint(obis, a, b, c, d, e, f, (bool)entry->value->data.boolean, statusSuffix);
     }
 }
 
-void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, bool value)
+void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, bool value, const char *statusSuffix)
 {
     if (openknxSMLModule.debug())
-        logInfoP("%s: %s", obis, (value ? "true" : "false"));
+        logInfoP("%s: %s%s", obis, (value ? "true" : "false"), statusSuffix);
 }
 
-void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, double value)
+void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, double value, const char *statusSuffix)
 {
     bool send = false;
     if (d == 8)
@@ -556,7 +567,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
         double counter = value;
         int64_t counterKwh = counter / 1000;
         int64_t counterWh = counter;
-        if (openknxSMLModule.debug()) logInfoP("%s: %.3f kWh", obis, counter / 1000);
+        if (openknxSMLModule.debug()) logInfoP("%s: %.3f kWh%s", obis, counter / 1000, statusSuffix);
 
         if (c == 1 && e > _features.maxTariff) _features.maxTariff = e;
         else if (c == 2 && e == 0) _features.bidirectional = true;
@@ -699,7 +710,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
     }
     else if (d == 7 && (c == 16 || c == 36 || c == 56 || c == 76))
     {
-        if (openknxSMLModule.debug()) logInfoP("%s: %i Watt", obis, (int)value);
+        if (openknxSMLModule.debug()) logInfoP("%s: %i Watt%s", obis, (int)value, statusSuffix);
 
         _features.power = true;
 
@@ -785,7 +796,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
     }
     else if (d == 7 && (c == 31 || c == 51 || c == 71))
     {
-        if (openknxSMLModule.debug()) logInfoP("%s: %.2f Ampere", obis, value);
+        if (openknxSMLModule.debug()) logInfoP("%s: %.2f Ampere%s", obis, value, statusSuffix);
 
         _features.current = true;
 
@@ -852,7 +863,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
     }
     else if (d == 7 && (c == 32 || c == 52 || c == 72))
     {
-        if (openknxSMLModule.debug()) logInfoP("%s: %.1f Volt", obis, value);
+        if (openknxSMLModule.debug()) logInfoP("%s: %.1f Volt%s", obis, value, statusSuffix);
 
         _features.voltage = true;
 
@@ -919,7 +930,7 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
     }
     else if (c == 14 && d == 7)
     {
-        if (openknxSMLModule.debug()) logInfoP("%s: %.1f Herz", obis, value);
+        if (openknxSMLModule.debug()) logInfoP("%s: %.1f Herz%s", obis, value, statusSuffix);
 
         _features.frequency = true;
 
@@ -946,11 +957,11 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
     else if (c == 81 && d == 7)
     {
         uint16_t degree = value;
-        if (openknxSMLModule.debug()) logInfoP("%s: %i °", obis, degree);
+        if (openknxSMLModule.debug()) logInfoP("%s: %i °%s", obis, degree, statusSuffix);
     }
     else
     {
-        if (openknxSMLModule.debug()) logInfoP("%s: %lf", obis, value);
+        if (openknxSMLModule.debug()) logInfoP("%s: %lf%s", obis, value, statusSuffix);
     }
 }
 
