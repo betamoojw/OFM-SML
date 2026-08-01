@@ -1,5 +1,6 @@
 #include "SMLChannel.h"
 #include "SMLModule.h"
+#include "NetworkModule.h"
 #include <sml/sml_file.h>
 
 #define CorrectionOfCycleTimeMS 50
@@ -418,6 +419,9 @@ void SMLChannel::processFile()
     _lastReceivedFile = millis();
     _features = {};
     _statusSentThisFile = false;
+#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)
+    mqttBegin();
+#endif
 
     sml_file *file = (sml_file *)malloc(sizeof(sml_file));
     if (file == NULL)
@@ -480,10 +484,44 @@ void SMLChannel::processFile()
         logIndentDown();
     }
 
+#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)
+    mqttPublish();
+#endif
+
     // clearCurrentFile();
 
     return;
 }
+
+#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)
+void SMLChannel::mqttBegin()
+{
+    _mqttJson.reset();
+    _mqttJson.beginObject();
+    _mqttHasData = false;
+}
+
+void SMLChannel::mqttAppend(const char *key, float value)
+{
+    _mqttJson.field(key, value, 3);
+    _mqttHasData = true;
+}
+
+void SMLChannel::mqttPublish()
+{
+    if (!_mqttHasData || !openknxNetwork.mqtt.connected()) return;
+
+    _mqttJson.endObject();
+
+    char topic[32];
+    if (!_mqttIdentifier.empty())
+        snprintf(topic, sizeof(topic), "sml/%s", _mqttIdentifier.c_str());
+    else
+        snprintf(topic, sizeof(topic), "sml/%c", 'a' + _channelIndex);
+
+    openknxNetwork.mqtt.publishP(topic, _mqttJson.str(), /*qos=*/0, /*retain=*/false);
+}
+#endif
 
 void SMLChannel::processDataPoint(sml_list_entry *entry)
 {
@@ -520,11 +558,17 @@ void SMLChannel::processDataPoint(sml_list_entry *entry)
 
         if (openknxSMLModule.debug()) snprintf(statusSuffix, sizeof(statusSuffix), " (Status: 0x%X)", rawStatus);
 
-        // Pro Telegramm gewinnt der erste Eintrag mit Statusfeld, weitere werden fürs KO ignoriert.
-        if (!_statusSentThisFile && knx.configured() && openknx.afterStartupDelay() && ParamSML_cShowMeterStatus)
+        // Pro Telegramm gewinnt der erste Eintrag mit Statusfeld, weitere werden ignoriert.
+        if (!_statusSentThisFile)
         {
-            KoSML_cMeterStatus.valueCompare(rawStatus, DPT_Value_4_Ucount);
+#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)
+            _mqttJson.field("status", rawStatus);
+            _mqttHasData = true;
+#endif
             _statusSentThisFile = true;
+
+            if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cShowMeterStatus)
+                KoSML_cMeterStatus.valueCompare(rawStatus, DPT_Value_4_Ucount);
         }
     }
 
@@ -571,6 +615,15 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
 
         if (c == 1 && e > _features.maxTariff) _features.maxTariff = e;
         else if (c == 2 && e == 0) _features.bidirectional = true;
+
+#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)
+        if (c == 1 && e == 0) mqttAppend("energy_in", counter / 1000.0f);
+        else if (c == 1 && e == 1) mqttAppend("energy_in_t1", counter / 1000.0f);
+        else if (c == 1 && e == 2) mqttAppend("energy_in_t2", counter / 1000.0f);
+        else if (c == 2 && e == 0) mqttAppend("energy_out", counter / 1000.0f);
+        else if (c == 2 && e == 1) mqttAppend("energy_out_t1", counter / 1000.0f);
+        else if (c == 2 && e == 2) mqttAppend("energy_out_t2", counter / 1000.0f);
+#endif
 
         if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cType && ParamSML_cCounter)
         {
@@ -714,6 +767,13 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
 
         _features.power = true;
 
+#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)
+        if (c == 16) mqttAppend("power", value);
+        else if (c == 36) mqttAppend("power_l1", value);
+        else if (c == 56) mqttAppend("power_l2", value);
+        else if (c == 76) mqttAppend("power_l3", value);
+#endif
+
         if (knx.configured() && openknx.afterStartupDelay())
         {
             if (c == 16 && ParamSML_cPowerSum)
@@ -800,6 +860,12 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
 
         _features.current = true;
 
+#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)
+        if (c == 31) mqttAppend("current_l1", value);
+        else if (c == 51) mqttAppend("current_l2", value);
+        else if (c == 71) mqttAppend("current_l3", value);
+#endif
+
         if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cCurrent)
         {
             if (c == 31)
@@ -866,6 +932,12 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
         if (openknxSMLModule.debug()) logInfoP("%s: %.1f Volt%s", obis, value, statusSuffix);
 
         _features.voltage = true;
+
+#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)
+        if (c == 32) mqttAppend("voltage_l1", value);
+        else if (c == 52) mqttAppend("voltage_l2", value);
+        else if (c == 72) mqttAppend("voltage_l3", value);
+#endif
 
         if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cVoltage)
         {
@@ -934,6 +1006,10 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
 
         _features.frequency = true;
 
+#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)
+        mqttAppend("frequency", value);
+#endif
+
         if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cFrequency)
         {
             if (ParamSML_cFrequencyChange && fabs(_sentDataFrequency - value) >= (double)ParamSML_cFrequencyChangeV / 10)
@@ -996,6 +1072,10 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
                 (uint8_t)value[6] << 24 | (uint8_t)value[7] << 16 | (uint8_t)value[8] << 8 | (uint8_t)value[9]); // Frabrikationsnummer
 
         if (openknxSMLModule.debug()) logInfoP("%s: %s", obis, identifier);
+
+#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)
+        _mqttIdentifier = identifier;
+#endif
 
         if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cIdentifikation)
         {

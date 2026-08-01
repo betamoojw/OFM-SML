@@ -1,4 +1,4 @@
-# **SML**
+# **Applikationsbeschreibung SML**
 
 <!-- DOC HelpContext="Dokumentation" -->
 
@@ -29,6 +29,11 @@ So lässt sich schon vor dem Einschalten der einzelnen Funktionen live prüfen, 
 ## **Allgemein**
 
 Auf dieser Seite sieht man die in der Applikation verwendete Modulversion.
+
+## **MQTT**
+
+Ist im Netzwerkmodul MQTT aktiviert, veröffentlicht jeder Kanal automatisch pro empfangenem Telegramm ein JSON-Objekt mit allen darin enthaltenen Messwerten (z. B. `energy_in`, `power`, `current_l1`, `voltage_l1`, `frequency`, `status`) unter dem Topic `openknx/<geräte-prefix>/sml/<identifikationsnummer>`. Liefert der Zähler keine Identifikationsnummer (OBIS 96.1.0), wird stattdessen der Kanalbuchstabe verwendet (`.../sml/a`, `.../sml/b`, …). Es gibt dafür keinen eigenen ETS-Parameter — die Veröffentlichung folgt automatisch der globalen MQTT-Einstellung im Netzwerkmodul. Gesendet wird ohne Retain-Flag, da die Nachricht keinen Zeitstempel enthält und ein beim nächsten Abonnenten-Connect ausgelieferter, zwischengespeicherter alter Wert irreführend wäre.
+
 
 <!-- DOC -->
 ### **Zählertyp**

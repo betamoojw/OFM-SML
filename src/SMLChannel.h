@@ -2,6 +2,9 @@
 #include "OpenKNX.h"
 #include "sml/sml_list.h"
 #include "sml/sml_value.h"
+#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)
+#include "OpenKNX/Format/JSON/Writer.h"
+#endif
 #ifdef ARDUINO_ARCH_RP2040
     #include "pico/sync.h"
 #endif
@@ -126,6 +129,17 @@ class SMLChannel : public OpenKNX::Channel
     void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, boolean value, const char *statusSuffix);
     void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, double value, const char *statusSuffix);
     void processDataPoint(char *obis, const uint8_t &a, const uint8_t &b, const uint8_t &c, const uint8_t &d, const uint8_t &e, const uint8_t &f, char *value, uint8_t len);
+
+#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)
+    // Ein JSON-Snapshot pro Telegramm (kein Retain: ohne Zeitstempel im Payload
+    // wäre ein zwischengespeicherter, veralteter Wert beim Subscriber-Connect irreführend).
+    OpenKNX::Format::JSON::Writer _mqttJson;
+    bool _mqttHasData = false;
+    std::string _mqttIdentifier;
+    void mqttBegin();
+    void mqttAppend(const char *key, float value);
+    void mqttPublish();
+#endif
 
   public:
     SMLChannel(uint8_t index);
