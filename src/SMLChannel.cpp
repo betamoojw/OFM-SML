@@ -1064,12 +1064,17 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
             return;
         }
 
+        // Feste Breite nach DIN 43863-5: 1 Ziffer Sparte, 3 Zeichen Hersteller, 2 Ziffern
+        // Fabrikationsblock, 8 Ziffern Fabrikationsnummer -> 14 Zeichen, wie DPT 16.001.
+        // Die Feldbreiten sind Mindestbreiten: ein Zähler außerhalb der Spec (z. B. eine
+        // Fabrikationsnummer > 99999999) erzeugt mehr Zeichen, snprintf schneidet dann ab.
         char identifier[15] = {};
-        sprintf(identifier, "%i%c%c%c%02u%08u",
-                value[1],                                                    // Sparte
-                value[2], value[3], value[4],                                // Hersteller
-                value[5],                                                    // Fabrikationsblock
-                (uint8_t)value[6] << 24 | (uint8_t)value[7] << 16 | (uint8_t)value[8] << 8 | (uint8_t)value[9]); // Frabrikationsnummer
+        snprintf(identifier, sizeof(identifier), "%u%c%c%c%02u%08u",
+                 (unsigned)(uint8_t)value[1],  // Sparte
+                 value[2], value[3], value[4], // Hersteller
+                 (unsigned)(uint8_t)value[5],  // Fabrikationsblock
+                 (uint32_t)(uint8_t)value[6] << 24 | (uint32_t)(uint8_t)value[7] << 16 |
+                     (uint32_t)(uint8_t)value[8] << 8 | (uint32_t)(uint8_t)value[9]); // Frabrikationsnummer
 
         if (openknxSMLModule.debug()) logInfoP("%s: %s", obis, identifier);
 
