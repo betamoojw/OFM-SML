@@ -12,6 +12,10 @@ Pro Kanal werden bereitgestellt:
 - **Momentanwerte** – Wirkleistung, Spannung, Strom, Frequenz, je nachdem was der Zähler liefert.
 - **Statuswort** – wird roh übertragen, da die Bit-Belegung herstellerabhängig und nicht verbindlich spezifiziert ist. Details und Beispiele zur Auswertung mit dem Logikmodul stehen in [doc/Applikationsbeschreibung-SML.md](doc/Applikationsbeschreibung-SML.md).
 
+## MQTT
+
+Ist im Netzwerkmodul MQTT aktiviert, veröffentlicht jeder Kanal zusätzlich pro empfangenem Telegramm ein JSON-Objekt mit allen darin enthaltenen Messwerten (z. B. `energy_in`, `power`, `current_l1`, `voltage_l1`, `frequency`, `status`) unter dem Topic `openknx/<geräte-prefix>/sml/<identifikationsnummer>`. Liefert der Zähler keine Identifikationsnummer, wird stattdessen der Kanalbuchstabe verwendet (`.../sml/a`, `.../sml/b`, …). Einen eigenen ETS-Parameter gibt es dafür nicht — die Veröffentlichung folgt automatisch der globalen MQTT-Einstellung im Netzwerkmodul. Details in [doc/Applikationsbeschreibung-SML.md](doc/Applikationsbeschreibung-SML.md).
+
 ## Status-LEDs
 
 Modul und jeder Kanal können eine Status-LED anzeigen, nach dem Zustandsmodell der OpenKNX-Wiki-Seite "Status-LED": sie blinkt bei jedem empfangenen Byte unabhängig von dessen Gültigkeit, leuchtet dauerhaft bei einem gültigen Telegramm und erlischt bzw. wird rot, wenn längere Zeit kein gültiger Empfang mehr erfolgt.

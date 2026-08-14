@@ -40,6 +40,14 @@ Das Statuswort wird roh (unausgewertet) als 32-Bit-Wert übertragen — die Bit-
 
 Das Ü-Flag ist beim Statuswort-KO und den Wh-genauen Zählerstand-Varianten standardmäßig deaktiviert (`TransmitFlag="Disabled"` in `SMLModule.templ.xml`) — diese Werte sind für die geräteinterne Weiterverarbeitung (Logikmodul, virtueller Zähler) gedacht, nicht für die direkte Übertragung per Gruppenadresse.
 
+## MQTT
+
+Pro empfangenem Telegramm veröffentlicht jeder Kanal einen JSON-Snapshot mit allen darin enthaltenen Messwerten unter `sml/<identifikationsnummer>` (Fallback: Kanalbuchstabe `a`, `b`, … wenn der Zähler keine OBIS 96.1.0 liefert) — bewusst ein Objekt statt einer Nachricht pro Wert, damit Abonnenten einen zeitlich konsistenten Stand sehen. Kein Retain, weil der Payload keinen Zeitstempel enthält.
+
+- Ein **eigener ETS-Parameter existiert nicht** — die Veröffentlichung folgt der globalen MQTT-Einstellung des Netzwerkmoduls.
+- Der ganze Zweig hängt an `#if (defined(KNX_IP_WIFI) || defined(KNX_IP_LAN)) && defined(OPENKNX_MQTT)`. `mqttBegin()` läuft am Anfang von `processFile()`, `mqttAppend()` in den `processDataPoint()`-Zweigen, `mqttPublish()` am Ende — neue Messwerte gehören genau dorthin, wo auch das zugehörige KO geschrieben wird.
+- JSON wird über `OpenKNX::Format::JSON::Writer` (OFM-Network) gebaut, nicht von Hand; der `Writer` ist Member und wird per `reset()` wiederverwendet.
+
 ## Status-LEDs
 
 Modul (`SML Gesamtstatus`, Funktions-ID 200) und jeder Kanal (`SML Kanalstatus X`, ID 201+n) folgen dem Zustandsmodell der OpenKNX-Wiki-Seite "Status-LED": die LED blinkt bei jedem empfangenen Byte unabhängig von dessen Gültigkeit, leuchtet dauerhaft bei einem gültigen Telegramm und erlischt bzw. wird rot, wenn `OPENKNX_SML_STALE_TIMEOUT` (Default 5000 ms) ohne gültigen Empfang verstreicht. Der Gesamtstatus des Moduls ist aktiv, sobald mindestens ein Kanal aktiv empfängt.
@@ -51,7 +59,7 @@ Modul (`SML Gesamtstatus`, Funktions-ID 200) und jeder Kanal (`SML Kanalstatus X
 
 ## Regeln für Weiterentwicklung
 
-1. Neue OBIS-Codes bekommen einen eigenen Zweig in `SMLChannel::processDataPoint()`.
+1. Neue OBIS-Codes bekommen einen eigenen Zweig in `SMLChannel::processDataPoint()` — inkl. `mqttAppend()`, damit KO und MQTT-Snapshot nicht auseinanderlaufen.
 2. `SMLModule` verwaltet nur das Channel-Array und den aggregierten Gesamtstatus — keine zählerspezifische Logik dort.
 3. Änderungen an der Statuswort-Bit-Tabelle in der Doku klar als unverifizierte Sekundärinformation kennzeichnen, nicht als gesicherte Spezifikation.
 
