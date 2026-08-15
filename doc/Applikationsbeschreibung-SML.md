@@ -93,11 +93,11 @@ Anbei gibt es neben der Bit-Tabelle noch zwei Beispiele, die du mit dem Konfigtr
 
 **Beispiel 1: Fehlerauswertung** — wertet die Bits 9, 10 und 17 aus und macht daraus ein Fehler-KO.
 
-OpenKNX,cv1,0xAF05:0xA3/LOG:0x44/10§f~Name=Z%C3%A4hlerstatus%20(Fehler)§f~LogicType=2§f~Logic=2§f~NameInput1=Stromz%C3%A4hler%20Statusmeldung§f~E1ConvertFloat=7§f~E1=1§f~E1Dpt=13§f~E1OtherKO:2=524§f~E1UseOtherKO=1§f~NameInput2=Konstante%3A%20Bits%209%2C10%2C17§f~E2ConvertFloat=5§f~E2=1§f~E2Dpt=13§f~E2LowDpt12Fix=132608§f~NameOutput=Ausgewerteter%20Fehlerstatus§f~OSendOnChange=1§f~OOnAll=8§f~OOnFunction=9§f~OOffAll=0§;OpenKNX
+    OpenKNX,cv1,0xAF05:0xA3/LOG:0x44/10§f~Name=Z%C3%A4hlerstatus%20(Fehler)§f~LogicType=2§f~Logic=2§f~NameInput1=Stromz%C3%A4hler%20Statusmeldung§f~E1ConvertFloat=7§f~E1=1§f~E1Dpt=13§f~E1OtherKO:2=524§f~E1UseOtherKO=1§f~NameInput2=Konstante%3A%20Bits%209%2C10%2C17§f~E2ConvertFloat=5§f~E2=1§f~E2Dpt=13§f~E2LowDpt12Fix=132608§f~NameOutput=Ausgewerteter%20Fehlerstatus§f~OSendOnChange=1§f~OOnAll=8§f~OOnFunction=9§f~OOffAll=0§;OpenKNX
 
 **Beispiel 2: Energieflussrichtung gesamt** — wertet Bit 11 aus und macht daraus ein KO für die Energierichtung (Bezug/Einspeisung).
 
-OpenKNX,cv1,0xAF05:0xA3/LOG:0x44/1§f~Name=Energierichtung%20gesamt§f~LogicType=2§f~Logic=2§f~NameInput1=Stromz%C3%A4hler%20Statusmeldung§f~E1ConvertFloat=7§f~E1=1§f~E1Dpt=13§f~E1OtherKO:2=524§f~E1UseOtherKO=1§f~NameInput2=Konstante%3A%20Bit%2011§f~E2ConvertFloat=5§f~E2=1§f~E2Dpt=13§f~E2LowDpt12Fix=2048§f~NameOutput=Ausgewertete%20Energierichtung§f~OSendOnChange=1§f~OOnAll=8§f~OOnFunction=9§f~OOffAll=0§;OpenKNX
+    OpenKNX,cv1,0xAF05:0xA3/LOG:0x44/1§f~Name=Energierichtung%20gesamt§f~LogicType=2§f~Logic=2§f~NameInput1=Stromz%C3%A4hler%20Statusmeldung§f~E1ConvertFloat=7§f~E1=1§f~E1Dpt=13§f~E1OtherKO:2=524§f~E1UseOtherKO=1§f~NameInput2=Konstante%3A%20Bit%2011§f~E2ConvertFloat=5§f~E2=1§f~E2Dpt=13§f~E2LowDpt12Fix=2048§f~NameOutput=Ausgewertete%20Energierichtung§f~OSendOnChange=1§f~OOnAll=8§f~OOnFunction=9§f~OOffAll=0§;OpenKNX
 
 *Bit-Tabellen*
 
