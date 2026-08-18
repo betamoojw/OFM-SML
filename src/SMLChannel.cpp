@@ -625,138 +625,157 @@ void SMLChannel::processDataPoint(char *obis, const uint8_t &a, const uint8_t &b
         else if (c == 2 && e == 2) mqttAppend("energy_out_t2", counter / 1000.0f);
 #endif
 
-        if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cType && ParamSML_cCounter)
+        // kWh- und Wh-Zählerstände sind unabhängig schaltbar, deshalb hier nur die Oder-Verknüpfung
+        if (knx.configured() && openknx.afterStartupDelay() && ParamSML_cType && (ParamSML_cCounter || ParamSML_cCounterWh))
         {
             if (c == 1 && e == 0)
             {
-                if (ParamSML_cCounterChange && llabs(_sentCounterIn - counterKwh) >= ParamSML_cCounterChangeV)
-                    send = true;
-
-                if (ParamSML_cCounterCyclic && (!_sentCounterInTime || delayCheck(_sentCounterInTime, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
-                    send = true;
-
-                if (send)
+                if (ParamSML_cCounter)
                 {
-                    _sentCounterIn = counterKwh;
-                    _sentCounterInTime = millis();
-                    KoSML_cCounterF1In.value(counterKwh, DPT_ActiveEnergy_kWh);
-                }
-                else
-                {
-                    KoSML_cCounterF1In.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                    if (ParamSML_cCounterChange && llabs(_sentCounterIn - counterKwh) >= ParamSML_cCounterChangeV)
+                        send = true;
+
+                    if (ParamSML_cCounterCyclic && (!_sentCounterInTime || delayCheck(_sentCounterInTime, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
+                        send = true;
+
+                    if (send)
+                    {
+                        _sentCounterIn = counterKwh;
+                        _sentCounterInTime = millis();
+                        KoSML_cCounterF1In.value(counterKwh, DPT_ActiveEnergy_kWh);
+                    }
+                    else
+                    {
+                        KoSML_cCounterF1In.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                    }
                 }
 
-                if (SML_cCounterWh)
+                if (ParamSML_cCounterWh)
                     KoSML_cCounterF2In.valueCompare(counterWh, DPT_ActiveEnergy);
             }
             else if (c == 1 && e == 1 && (ParamSML_cType == 2 || ParamSML_cType == 4))
             {
-                if (ParamSML_cCounterChange && llabs(_sentCounterInT1 - counterKwh) >= ParamSML_cCounterChangeV)
-                    send = true;
-
-                if (ParamSML_cCounterCyclic && (!_sentCounterInT1Time || delayCheck(_sentCounterInT1Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
-                    send = true;
-
-                if (send)
+                if (ParamSML_cCounter)
                 {
-                    _sentCounterInT1 = counterKwh;
-                    _sentCounterInT1Time = millis();
-                    KoSML_cCounterF1InT1.value(counterKwh, DPT_ActiveEnergy_kWh);
-                }
-                else
-                {
-                    KoSML_cCounterF1InT1.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                    if (ParamSML_cCounterChange && llabs(_sentCounterInT1 - counterKwh) >= ParamSML_cCounterChangeV)
+                        send = true;
+
+                    if (ParamSML_cCounterCyclic && (!_sentCounterInT1Time || delayCheck(_sentCounterInT1Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
+                        send = true;
+
+                    if (send)
+                    {
+                        _sentCounterInT1 = counterKwh;
+                        _sentCounterInT1Time = millis();
+                        KoSML_cCounterF1InT1.value(counterKwh, DPT_ActiveEnergy_kWh);
+                    }
+                    else
+                    {
+                        KoSML_cCounterF1InT1.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                    }
                 }
 
-                if (SML_cCounterWh)
+                if (ParamSML_cCounterWh)
                     KoSML_cCounterF2InT1.valueCompare(counterWh, DPT_ActiveEnergy);
             }
             else if (c == 1 && e == 2 && (ParamSML_cType == 2 || ParamSML_cType == 4))
             {
-                if (ParamSML_cCounterChange && llabs(_sentCounterInT2 - counterKwh) >= ParamSML_cCounterChangeV)
-                    send = true;
-
-                if (ParamSML_cCounterCyclic && (!_sentCounterInT2Time || delayCheck(_sentCounterInT2Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
-                    send = true;
-
-                if (send)
+                if (ParamSML_cCounter)
                 {
-                    _sentCounterInT2 = counterKwh;
-                    _sentCounterInT2Time = millis();
-                    KoSML_cCounterF1InT2.value(counterKwh, DPT_ActiveEnergy_kWh);
-                }
-                else
-                {
-                    KoSML_cCounterF1InT2.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                    if (ParamSML_cCounterChange && llabs(_sentCounterInT2 - counterKwh) >= ParamSML_cCounterChangeV)
+                        send = true;
+
+                    if (ParamSML_cCounterCyclic && (!_sentCounterInT2Time || delayCheck(_sentCounterInT2Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
+                        send = true;
+
+                    if (send)
+                    {
+                        _sentCounterInT2 = counterKwh;
+                        _sentCounterInT2Time = millis();
+                        KoSML_cCounterF1InT2.value(counterKwh, DPT_ActiveEnergy_kWh);
+                    }
+                    else
+                    {
+                        KoSML_cCounterF1InT2.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                    }
                 }
 
-                if (SML_cCounterWh)
+                if (ParamSML_cCounterWh)
                     KoSML_cCounterF2InT2.valueCompare(counterWh, DPT_ActiveEnergy);
             }
             else if (c == 2 && e == 0 && (ParamSML_cType == 3 || ParamSML_cType == 4))
             {
-                if (ParamSML_cCounterChange && llabs(_sentCounterOut - counterKwh) >= ParamSML_cCounterChangeV)
-                    send = true;
-
-                if (ParamSML_cCounterCyclic && (!_sentCounterOutTime || delayCheck(_sentCounterOutTime, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
-                    send = true;
-
-                if (send)
+                if (ParamSML_cCounter)
                 {
-                    _sentCounterOut = counterKwh;
-                    _sentCounterOutTime = millis();
-                    KoSML_cCounterF1Out.value(counterKwh, DPT_ActiveEnergy_kWh);
-                }
-                else
-                {
-                    KoSML_cCounterF1Out.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                    if (ParamSML_cCounterChange && llabs(_sentCounterOut - counterKwh) >= ParamSML_cCounterChangeV)
+                        send = true;
+
+                    if (ParamSML_cCounterCyclic && (!_sentCounterOutTime || delayCheck(_sentCounterOutTime, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
+                        send = true;
+
+                    if (send)
+                    {
+                        _sentCounterOut = counterKwh;
+                        _sentCounterOutTime = millis();
+                        KoSML_cCounterF1Out.value(counterKwh, DPT_ActiveEnergy_kWh);
+                    }
+                    else
+                    {
+                        KoSML_cCounterF1Out.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                    }
                 }
 
-                if (SML_cCounterWh)
+                if (ParamSML_cCounterWh)
                     KoSML_cCounterF2Out.valueCompare(counterWh, DPT_ActiveEnergy);
             }
             else if (c == 2 && e == 1 && ParamSML_cType == 4)
             {
-                if (ParamSML_cCounterChange && llabs(_sentCounterOutT1 - counterKwh) >= ParamSML_cCounterChangeV)
-                    send = true;
-
-                if (ParamSML_cCounterCyclic && (!_sentCounterOutT1Time || delayCheck(_sentCounterOutT1Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
-                    send = true;
-
-                if (send)
+                if (ParamSML_cCounter)
                 {
-                    _sentCounterOutT1 = counterKwh;
-                    _sentCounterOutT1Time = millis();
-                    KoSML_cCounterF1OutT1.value(counterKwh, DPT_ActiveEnergy_kWh);
-                }
-                else
-                {
-                    KoSML_cCounterF1OutT1.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                    if (ParamSML_cCounterChange && llabs(_sentCounterOutT1 - counterKwh) >= ParamSML_cCounterChangeV)
+                        send = true;
+
+                    if (ParamSML_cCounterCyclic && (!_sentCounterOutT1Time || delayCheck(_sentCounterOutT1Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
+                        send = true;
+
+                    if (send)
+                    {
+                        _sentCounterOutT1 = counterKwh;
+                        _sentCounterOutT1Time = millis();
+                        KoSML_cCounterF1OutT1.value(counterKwh, DPT_ActiveEnergy_kWh);
+                    }
+                    else
+                    {
+                        KoSML_cCounterF1OutT1.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                    }
                 }
 
-                if (SML_cCounterWh)
+                if (ParamSML_cCounterWh)
                     KoSML_cCounterF2OutT1.valueCompare(counterWh, DPT_ActiveEnergy);
             }
             else if (c == 2 && e == 2 && ParamSML_cType == 4)
             {
-                if (ParamSML_cCounterChange && llabs(_sentCounterOutT2 - counterKwh) >= ParamSML_cCounterChangeV)
-                    send = true;
-
-                if (ParamSML_cCounterCyclic && (!_sentCounterOutT2Time || delayCheck(_sentCounterOutT2Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
-                    send = true;
-
-                if (send)
+                if (ParamSML_cCounter)
                 {
-                    _sentCounterOutT2 = counterKwh;
-                    _sentCounterOutT2Time = millis();
-                    KoSML_cCounterF1OutT2.value(counterKwh, DPT_ActiveEnergy_kWh);
-                }
-                else
-                {
-                    KoSML_cCounterF1OutT2.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                    if (ParamSML_cCounterChange && llabs(_sentCounterOutT2 - counterKwh) >= ParamSML_cCounterChangeV)
+                        send = true;
+
+                    if (ParamSML_cCounterCyclic && (!_sentCounterOutT2Time || delayCheck(_sentCounterOutT2Time, (ParamSML_cCounterCyclicTimeMS - CorrectionOfCycleTimeMS))))
+                        send = true;
+
+                    if (send)
+                    {
+                        _sentCounterOutT2 = counterKwh;
+                        _sentCounterOutT2Time = millis();
+                        KoSML_cCounterF1OutT2.value(counterKwh, DPT_ActiveEnergy_kWh);
+                    }
+                    else
+                    {
+                        KoSML_cCounterF1OutT2.valueNoSend(counterKwh, DPT_ActiveEnergy_kWh);
+                    }
                 }
 
-                if (SML_cCounterWh)
+                if (ParamSML_cCounterWh)
                     KoSML_cCounterF2OutT2.valueCompare(counterWh, DPT_ActiveEnergy);
             }
         }
